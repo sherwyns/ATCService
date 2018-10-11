@@ -1,0 +1,39 @@
+{
+  "name": "favorite",
+  "plural": "favorite",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "id": {
+      "type": "number",
+      "required": true
+    },
+    "user_id": {
+      "type": "number",
+      "required": true
+    },
+    "product_id": {
+      "type": "number",
+      "required": true
+    },
+    "service_id": {
+      "type": "number",
+      "required": true
+    },
+    "created_at": {
+      "type": "timestamp",
+      "required": true
+    },
+    "modified_at": {
+      "type": "number",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

@@ -1,0 +1,54 @@
+{
+  "name": "service",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "business_id": {
+      "type": "number",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "price": {
+      "type": "number",
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "required": true
+    },
+    "image": {
+      "type": "string",
+      "required": true
+    },
+    "status": {
+      "type": "enum",
+      "required": true
+    },
+    "created_at": {
+      "type": "timestamp",
+      "required": true
+    },
+    "created_id": {
+      "type": "number",
+      "required": true
+    },
+    "modified_at": {
+      "type": "timestamp",
+      "required": true
+    },
+    "modified_id": {
+      "type": "number",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
