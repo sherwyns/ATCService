@@ -1,0 +1,94 @@
+{
+  "name": "account_settings",
+  "plural": "account_settings",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "user_id": {
+      "type": "number",
+      "required": true
+    },
+    "shop_name": {
+      "type": "string",
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "tax_id": {
+      "type": "string",
+      "required": true
+    },
+    "deactivate_account": {
+      "type": "number",
+      "required": true
+    },
+    "store_url": {
+      "type": "string",
+      "required": true
+    },
+    "site_status": {
+      "type": "string",
+      "required": true
+    },
+    "business_type": {
+      "type": "string",
+      "required": true
+    },
+    "service": {
+      "type": "string",
+      "required": true
+    },
+    "timezone": {
+      "type": "string",
+      "required": true
+    },
+    "workinghours": {
+      "type": "string",
+      "required": true
+    },
+    "image": {
+      "type": "string",
+      "required": true
+    },
+    "tagline": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number",
+      "required": true
+    },
+    "longitude": {
+      "type": "number",
+      "required": true
+    },
+    "created_at": {
+      "type": "timestamp",
+      "required": true
+    },
+    "created_id": {
+      "type": "number",
+      "required": true
+    },
+    "modified_at": {
+      "type": "timestamp",
+      "required": true
+    },
+    "modified_id": {
+      "type": "number",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

@@ -1,0 +1,43 @@
+{
+  "name": "category",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "parent_id": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    },
+    "image_url": {
+      "type": "string",
+      "required": true
+    },
+    "created_at": {
+      "type": "number",
+      "required": true
+    },
+    "created_id": {
+      "type": "number",
+      "required": true
+    },
+    "modified_at": {
+      "type": "timestamp",
+      "required": true
+    },
+    "modified_id": {
+      "type": "number",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

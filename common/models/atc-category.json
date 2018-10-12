@@ -1,0 +1,43 @@
+{
+  "name": "atc_category",
+  "plural": "atc_category",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "category_id": {
+      "type": "number",
+      "required": true
+    },
+    "service_id": {
+      "type": "number",
+      "required": true
+    },
+    "product_id": {
+      "type": "number",
+      "required": true
+    },
+    "created_at": {
+      "type": "timestamp",
+      "required": true
+    },
+    "create_id": {
+      "type": "number",
+      "required": true
+    },
+    "modified_at": {
+      "type": "timestamp",
+      "required": true
+    },
+    "modified_id": {
+      "type": "number",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
