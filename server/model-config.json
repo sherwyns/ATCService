@@ -58,5 +58,13 @@
   "atc_category": {
     "dataSource": "mysqlds",
     "public": true
+  },
+  "ProductBulkUpload": {
+    "dataSource": null,
+    "public": true
+  },
+  "uploadinformation": {
+    "dataSource": "mysqlds",
+    "public": true
   }
 }

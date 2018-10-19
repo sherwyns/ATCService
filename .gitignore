@@ -17,5 +17,11 @@
 coverage
 node_modules
 npm-debug.log
-/server/logs/
+/server/log/
+/server/local-storage/
+/server/private/
+/server/component-config.production.json
+/server/config.json
+/server/ssl-config.json
+/server/server.json
 package-lock.json

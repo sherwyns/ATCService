@@ -1,5 +1,6 @@
 'use strict';
 
-module.exports = function(Service) {
+let disableMethods = require('../../server/disable-methods');
 
+module.exports = function(Service) {
 };

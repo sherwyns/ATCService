@@ -1,0 +1,38 @@
+{
+  "name": "uploadinformation",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "store_id": {
+      "type": "number",
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "type": {
+      "type": "string",
+      "required": true
+    },
+    "message": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "required": true,
+      "default": "0"
+    },
+    "created_at": {
+      "type": "date",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

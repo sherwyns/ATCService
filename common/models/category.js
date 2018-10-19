@@ -1,5 +1,6 @@
 'use strict';
 let log = require('./../../server/logger');
+let disableMethods = require('../../server/disable-methods');
 
 module.exports = function(Category) {
   Category.remoteMethod('getCategories', {
