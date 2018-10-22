@@ -1,5 +1,5 @@
 {
-  "name": "uploadinformation",
+  "name": "Uploadinformation",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -28,7 +28,7 @@
     },
     "created_at": {
       "type": "date",
-      "required": true
+      "required": false
     }
   },
   "validations": [],

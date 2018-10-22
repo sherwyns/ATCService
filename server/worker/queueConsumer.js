@@ -50,13 +50,11 @@ class QueueConsumer {
     _consume(channel) {
         try {
             channel.prefetch(1);
-            console.log('queue Waiting')
+            console.log('queue Waitingssss')
             
             channel.consume(this.queue, async (msg) => {
                 try {
                     let data = msg.content.toString();
-
-                    
                     //require(`./${this.workerClass}`);
                      let WorkerClassObj = require(`./${this.workerClass}`);
                      let actionWorkerObj = new WorkerClassObj();
@@ -66,7 +64,7 @@ class QueueConsumer {
 
                     // }
                 }catch(e) {
-                    console.log(e);
+                  //  console.log(e);
                 }
             }, {noAck: true});
         } catch (error) {

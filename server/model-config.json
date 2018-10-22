@@ -63,7 +63,11 @@
     "dataSource": null,
     "public": true
   },
-  "uploadinformation": {
+  "Uploadinformation": {
+    "dataSource": "mysqlds",
+    "public": true
+  },
+  "store": {
     "dataSource": "mysqlds",
     "public": true
   }

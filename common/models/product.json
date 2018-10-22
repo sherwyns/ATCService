@@ -6,8 +6,12 @@
     "validateUpsert": true
   },
   "properties": {
-    "business_id": {
+    "store_id": {
       "type": "number",
+      "required": true
+    },
+    "sku": {
+      "type": "string",
       "required": true
     },
     "title": {
@@ -20,31 +24,19 @@
     },
     "description": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "image": {
       "type": "string",
       "required": true
     },
-    "status": {
-      "type": "enum",
-      "required": true
-    },
     "created_at": {
       "type": "string",
-      "required": true
-    },
-    "created_id": {
-      "type": "number",
-      "required": true
+      "required": false
     },
     "modified_at": {
       "type": "timestamp",
-      "required": true
-    },
-    "modified_id": {
-      "type": "number",
-      "required": true
+      "required": false
     }
   },
   "validations": [],

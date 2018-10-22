@@ -23,12 +23,13 @@ class ProductBulkuploadWorker {
     try {
         let dataJson = JSON.parse(data);
         let jsonObj =  await csv().fromFile(dataJson.productsCsv);
-        request.post({url: 'http://localhost:3000/api/uploadinformations/products', form: {data: jsonObj, storeid: dataJson.storeid}}, function(err, httpResponse, body) {
-          res.json(body);
+        console.log(dataJson.filename);
+        request.post({url: 'http://localhost:3000/api/uploadinformations/products', form: {data: jsonObj, storeid: dataJson.storeid, filename: dataJson.filename}}, function(err, httpResponse, body) {
+          console.log("zXZXZ", body);
         });
             
     } catch (error) {
-
+      console.log(error);
     }
   }
 }
