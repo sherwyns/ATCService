@@ -8,15 +8,16 @@ module.exports = function(Uploadinformation) {
     let storeid  = req.body.storeid;
     let filename  = req.body.filename;
     try {
-      let values = await getProducts(products, storeid, filename, Uploadinformation);
-    Uploadinformation.app.models.product.create(values, async function(err, res){
-      console.log(err);
-      if(err){
-        throw ('Error in bulk upload');
-      } else {
-        await addUploadinformation("Success", filename, storeid, 1, Uploadinformation);
-      }
-    }); 
+          let uploadRes = await addUploadinformation("progress", filename, storeid, 0, Uploadinformation);
+          let values = await getProducts(uploadRes, products, storeid, filename, Uploadinformation);
+          Uploadinformation.app.models.product.create(values, async function(err, res){
+            console.log(err);
+            if(err){
+              throw ('Error in bulk upload');
+             } else {
+               await updateUploadinformation(uploadRes, "Success", filename, storeid, 1, Uploadinformation);
+             }
+           }); 
      } catch (err) {
       console.log(err);
     }
@@ -35,7 +36,7 @@ module.exports = function(Uploadinformation) {
 };
 
 
-  function getProducts(products, storeid, filename, Uploadinformation){
+  function getProducts(uploadRes, products, storeid, filename, Uploadinformation){
   return new Promise(async (resolve,reject) => {
     try{
       let productData = [];
@@ -44,13 +45,15 @@ module.exports = function(Uploadinformation) {
          let data = {};
          if (product.sku === '' || product.title === '' || product.availability === '' || product.category === '') {
             let message = "Data is missing in row:" + i
-            await addUploadinformation(message, filename, storeid, 0, Uploadinformation);
+            //await addUploadinformation(message, filename, storeid, 0, Uploadinformation);
+            await updateUploadinformation(uploadRes, message, filename, storeid, 0, Uploadinformation);
             reject (message);
             break;
           } else {
             if(!isUrlValid(product.imageurl)){
               let message = "Image url is inavlid at row:" + i
-              await addUploadinformation(message, filename, storeid, 0, Uploadinformation);
+              //await addUploadinformation(message, filename, storeid, 0, Uploadinformation);
+              await updateUploadinformation(uploadRes, message, filename, storeid, 0, Uploadinformation);
               reject (message);
               break;
             } else {  
@@ -96,6 +99,31 @@ function addUploadinformation(message, filename, storeid, status, Uploadinformat
         if(err){
           reject (err);
         }
+        resolve(res);
+      }); 
+
+
+    }catch(err){
+        reject (err);
+    }
+}); 
+}
+
+
+function updateUploadinformation(uploadRes, message, filename, storeid, status, Uploadinformation){
+  return new Promise((resolve,reject) => {
+    try{
+      let data = {};
+      data.store_id = storeid;
+      data.name = filename;
+      data.type = "product";
+      data.message = message;
+      data.status = status;
+      Uploadinformation.replaceById(uploadRes.id, data, function(err, res){
+        if(err){
+          reject (err);
+        }
+        resolve(res);
       }); 
 
 
