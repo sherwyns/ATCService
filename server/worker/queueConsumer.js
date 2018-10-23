@@ -3,7 +3,6 @@
 let rmqChannel = require('./queueClient');
 let publish = require('./queuePublisher');
 
-
 /**
  * Works as router for the workers. connects to the queue and consumes the message.
  * creates an instance of the action class and calls the processing function.
@@ -14,7 +13,6 @@ class QueueConsumer {
      * 
      */
     constructor() {
-    //    console.log(process);
         this.queue = process.argv[2] || undefined;
         this.workerClass = process.argv[3] || undefined;
     }
@@ -30,8 +28,6 @@ class QueueConsumer {
 
             rmqChannel(this.queue, (err, channel, conn) => {
                 if (err) {
-                    // let flclError = new FlclError({className: 'QueueConsumer', methodName: 'connect', cause: err, message: 'failed to connect to the channel.'});
-                    // this.logger.error(flclError);
                     console.error(err);
                 } else {
                     console.log({'channel and queue created with: ': this.queue});
@@ -50,25 +46,20 @@ class QueueConsumer {
     _consume(channel) {
         try {
             channel.prefetch(1);
-            console.log('queue Waitingssss')
-            
+            console.log('queue Waiting')
             channel.consume(this.queue, async (msg) => {
                 try {
                     let data = msg.content.toString();
-                    //require(`./${this.workerClass}`);
                      let WorkerClassObj = require(`./${this.workerClass}`);
                      let actionWorkerObj = new WorkerClassObj();
-                    // // //all the action class should have this public method defined.
                      let shouldItBeRequeued = await actionWorkerObj.processMessage(data);
-                    // if(shouldItBeRequeued) {
-
-                    // }
                 }catch(e) {
-                  //  console.log(e);
+                    log.error(error);
                 }
             }, {noAck: true});
         } catch (error) {
-
+            console.log(error);
+            log.error(error);
         }
     }
 }

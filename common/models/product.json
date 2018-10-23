@@ -10,10 +10,6 @@
       "type": "number",
       "required": true
     },
-    "sku": {
-      "type": "string",
-      "required": true
-    },
     "title": {
       "type": "string",
       "required": true
@@ -25,6 +21,10 @@
     "description": {
       "type": "string",
       "required": false
+    },
+    "category": {
+      "type": "string",
+      "required": true
     },
     "image": {
       "type": "string",
