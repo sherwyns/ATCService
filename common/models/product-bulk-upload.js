@@ -37,7 +37,7 @@ module.exports = function(Productbulkupload) {
     upload(req, res, function(err) {
       if (req.fileValidationError) {
         log.error(req.fileValidationError);
-        return res.json(req.fileValidationError);
+        return res.json(msg);
       }
       if (err) {
         return res.json(err);

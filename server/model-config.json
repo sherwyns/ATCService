@@ -70,5 +70,9 @@
   "store": {
     "dataSource": "mysqlds",
     "public": true
+  },
+  "socialUser": {
+    "dataSource": "mysqlds",
+    "public": true
   }
 }

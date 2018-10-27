@@ -72,3 +72,4 @@ boot(app, __dirname, function(err) {
   if (require.main === module)
     app.start();
 });
+

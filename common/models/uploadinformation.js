@@ -106,7 +106,7 @@ module.exports = function(Uploadinformation) {
         data.type = "product";
         data.message = message;
         data.status = status;
-        Uploadinformation.replaceById(uploadRes.id, data, function(err, res){
+        Uploadinformation.updateAll({id: uploadRes.id}, data, function(err, res){
           if(err){
             reject (err);
           }
