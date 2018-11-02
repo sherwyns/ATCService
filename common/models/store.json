@@ -67,7 +67,7 @@
       "type": "boolean",
       "required": true
     },
-    "logitude": {
+    "longitude": {
       "type": "boolean",
       "required": true
     },

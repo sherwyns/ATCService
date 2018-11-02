@@ -1,5 +1,5 @@
 'use strict';
-let log = require('./../../server/logger');
+//let log = require('./../../server/logger');
 
 
 module.exports = function(Uploadinformation) {
@@ -23,7 +23,7 @@ module.exports = function(Uploadinformation) {
              }
            }); 
      } catch (err) {
-      log.error(err);
+ //     log.error(err);
       console.log(err);
     }
   };

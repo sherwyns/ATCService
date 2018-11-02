@@ -10,43 +10,42 @@ let publish = require('./queuePublisher');
 class QueueConsumer {
 
     /**
-     * 
+     *
      */
-    constructor() {
-        this.queue = process.argv[2] || undefined;
-        this.workerClass = process.argv[3] || undefined;
-    }
+  constructor() {
+    this.queue = process.argv[2] || undefined;
+    this.workerClass = process.argv[3] || undefined;
+  }
 
     /**
      * connects to the queue server channel and triggers the consume function upon successful connection
      */
-    connect() {
-        try {
-            
-            if(!this.queue) throw new Error('Queue name is not set from the supervisor. please fix it in the supervisor configuration.');
-            if(!this.workerClass) throw new Error('Worker class name is not set from the supervisor. please fix it in the supervisor configuration.');
+  connect() {
+    try {
+      if (!this.queue) throw new Error('Queue name is not set from the supervisor. please fix it in the supervisor configuration.');
+      if (!this.workerClass) throw new Error('Worker class name is not set from the supervisor. please fix it in the supervisor configuration.');
 
-            rmqChannel(this.queue, (err, channel, conn) => {
-                if (err) {
-                    console.error(err);
-                } else {
-                    console.log({'channel and queue created with: ': this.queue});
-                    this._consume(channel);
-                }
-            });
-        } catch (error) {
-            console.error(error);
+      rmqChannel(this.queue, (err, channel, conn) => {
+        if (err) {
+          console.error(err);
+        } else {
+          console.log({'channel and queue created with: ': this.queue});
+          this._consume(channel);
         }
+      });
+    } catch (error) {
+      console.error(error);
     }
+  }
 
     /**
      * consumes the message and ack it. also pass it to the action class for execution
      * @param {*} channel
      */
-    _consume(channel) {
-        try {
-            channel.prefetch(1);
-            console.log('queue Waiting')
+  _consume(channel) {
+    try {
+      channel.prefetch(1);
+      console.log('queue Waiting');
             channel.consume(this.queue, async (msg) => {
                 try {
                     let data = msg.content.toString();
@@ -54,14 +53,15 @@ class QueueConsumer {
                      let actionWorkerObj = new WorkerClassObj();
                      let shouldItBeRequeued = await actionWorkerObj.processMessage(data);
                 }catch(e) {
-                    log.error(error);
+                 //   log.error(error);
+                 console.log(error);
                 }
             }, {noAck: true});
-        } catch (error) {
-            console.log(error);
-            log.error(error);
-        }
+    } catch (error) {
+      console.log(error);
+         //   log.error(error);
     }
+  }
 }
 
 let QueueConsumerObj = new QueueConsumer();
