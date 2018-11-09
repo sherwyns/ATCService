@@ -1,11 +1,17 @@
 'use strict';
+const alloc = require('buffer-alloc');
+
 let rabbimqPublisher = function(data, queue, publisherChannel) {
    /**
     * Encodes the json data to a string
     * @param  {} doc
     */
   function encode(doc) {
-    return new Buffer(JSON.stringify(doc));
+  //  return new Buffer(JSON.stringify(doc));
+    console.log('encode');
+    let bufferDoc = new Buffer.from(JSON.stringify(doc), 'UTF-8');
+    console.log(bufferDoc);
+    return bufferDoc;
   }
 
   return new Promise((resolve, reject) => {

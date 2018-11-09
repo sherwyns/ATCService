@@ -42,13 +42,15 @@ module.exports = function(Productbulkupload) {
       if (err) {
         return res.json(err);
       }
-      // console.log(req.files[0].filename);
-      //   console.log(req.body);
+      // console.log('test');
+      console.log(req);
+      // console.log(req.body);
       let productsCsv = fileDirectory + uploadedFileName + '.csv';
       publish({'productsCsv': productsCsv, 'storeid': req.body.store_id, 'filename': uploadedFileName + '.csv'}, 'productbulkupload-queue', Channel).then((passed) => {
         console.log(passed);
         cb(null, passed);
       }).catch((err) => {
+        console.log(err);
         log.error(err);
         return res.json(err);
       });
