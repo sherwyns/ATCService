@@ -29,14 +29,6 @@
     "image": {
       "type": "string",
       "required": true
-    },
-    "created_at": {
-      "type": "string",
-      "required": false
-    },
-    "modified_at": {
-      "type": "timestamp",
-      "required": false
     }
   },
   "validations": [],

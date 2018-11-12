@@ -64,23 +64,16 @@
       "required": true
     },
     "latitude": {
-      "type": "boolean",
-      "required": true
-    },
-    "longitude": {
-      "type": "boolean",
-      "required": true
-    },
-    "created_at": {
-      "type": "timestamp",
-      "required": true
-    },
-    "created_id": {
       "type": "number",
       "required": true
     },
-    "modified_at": {
-      "type": "timestamp",
+    "longitude": {
+      "type": "number",
+      "required": true
+    },
+   
+    "created_id": {
+      "type": "number",
       "required": true
     },
     "modified_id": {

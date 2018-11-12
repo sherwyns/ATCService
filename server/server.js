@@ -47,6 +47,7 @@
 
 var loopback = require('loopback');
 var boot = require('loopback-boot');
+var path = require('path');
 
 var app = module.exports = loopback();
 
@@ -62,6 +63,8 @@ app.start = function() {
     }
   });
 };
+
+app.use(loopback.static(path.resolve(__dirname, './local-storage')));
 
 // Bootstrap the application, configure models, datasources and middleware.
 // Sub-apps like REST API are mounted via boot scripts.
