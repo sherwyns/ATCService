@@ -36,4 +36,29 @@ module.exports = function(Store) {
 
     },
   });
+
+  Store.favorite = function(req, res, cb) {
+    try {
+      console.log(req.body);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  Store.remoteMethod('favorite', {
+    description: 'API to store product information.',
+    accepts: [
+          {arg: 'req', type: 'object', http: {source: 'req'}},
+          {arg: 'res', type: 'object', http: {source: 'res'}},
+    ],
+    http: {
+      path: '/favorite',
+      verb: 'post',
+    },
+    returns: {
+      arg: 'data',
+      type: 'object',
+
+    },
+  });
 };
