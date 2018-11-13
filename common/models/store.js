@@ -1,22 +1,36 @@
 'use strict';
+let log = require('./../../server/logger');
 
 module.exports = function(Store) {
   Store.getstores = function(req, res, cb) {
     try {
       let db =  Store.dataSource;
-      let sql = `SELECT id, shop_name, store_url, image, latitude, longitude,
-                 (SELECT (SELECT CONCAT(name, ', ', (CASE WHEN image_url = '-' THEN "null" ELSE image_url END)) as cat FROM category WHERE id = stc.categoty_id) as catdetails FROM StoreCategory
-                  as stc WHERE store_id = st.id) as category, 0 as isfavorite,  CONCAT('omr', ',', 'velacherry') as neighbouthood  FROM store as st`;
+      let sql = `SELECT id, shop_name, store_url, image, latitude, longitude, neighbourhood, (SELECT group_concat(CONCAT(COALESCE(cat.id,''), ':', COALESCE(cat.name,''), ':', COALESCE(cat.image_url,'NULL'))SEPARATOR ',') FROM StoreCategory as stc
+                 JOIN category as cat
+                 on stc.categoty_id = cat.id
+                 WHERE stc.store_id = st.id) as category FROM store as st`;
       db.connector.execute(sql, function(err, stores) {
         if (err) {
           let error = new Error(err);
           error.status = 400;
           return cb(error);
         }
+        stores.forEach((item) => {
+          let category = item.category.split(',');
+          let j = 0;
+          let storeCategory = [];
+          category.forEach((cat)=>{
+            let val = cat.split(':');
+            storeCategory[j] = {'id': val[0], 'name': val[1], 'image_url': val[2]};
+            j++;
+          });
+          item.category = storeCategory;
+        });
         cb(null, stores);
       });
     } catch (err) {
       console.error(err);
+      log.error(err);
     }
   };
 

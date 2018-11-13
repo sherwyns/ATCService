@@ -39,14 +39,13 @@
       "principalType": "ROLE",
       "principalId": "$unauthenticated",
       "permission": "ALLOW"
-    },    
+    },
     {
+      "accessType": "READ",
       "principalType": "ROLE",
       "principalId": "$everyone",
-      "accessType": "READ",
       "permission": "ALLOW"
     }
-
   ],
   "methods": {}
 }

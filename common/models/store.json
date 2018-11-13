@@ -63,6 +63,10 @@
       "type": "string",
       "required": true
     },
+    "neighbourhood": {
+      "type": "string",
+      "required": true
+    },
     "latitude": {
       "type": "number",
       "required": true
@@ -71,7 +75,6 @@
       "type": "number",
       "required": true
     },
-   
     "created_id": {
       "type": "number",
       "required": true
