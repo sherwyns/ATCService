@@ -21,7 +21,8 @@ module.exports = function(Store) {
           let storeCategory = [];
           category.forEach((cat)=>{
             let val = cat.split(':');
-            storeCategory[j] = {'id': val[0], 'name': val[1], 'image_url': val[2]};
+            let img = val[2] === 'NULL' ? null : val[2];
+            storeCategory[j] = {'id': val[0], 'name': val[1], 'image_url': img};
             j++;
           });
           item.category = storeCategory;
