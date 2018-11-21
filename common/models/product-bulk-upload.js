@@ -43,14 +43,14 @@ module.exports = function(Productbulkupload) {
         return res.json(err);
       }
       // console.log('test');
-      console.log(req);
+//      console.log(req);
       // console.log(req.body);
       let productsCsv = fileDirectory + uploadedFileName + '.csv';
       publish({'productsCsv': productsCsv, 'storeid': req.body.store_id, 'filename': uploadedFileName + '.csv'}, 'productbulkupload-queue', Channel).then((passed) => {
-        console.log(passed);
+        console.log('passed', passed);
         cb(null, passed);
       }).catch((err) => {
-        console.log(err);
+        console.log('err', err);
         log.error(err);
         return res.json(err);
       });
@@ -69,3 +69,4 @@ module.exports = function(Productbulkupload) {
     http: {verb: 'post'},
   });
 };
+

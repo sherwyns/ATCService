@@ -1,5 +1,5 @@
 {
-  "name": "store",
+  "name": "Store",
   "plural": "store",
   "base": "PersistedModel",
   "idInjection": true,
@@ -85,7 +85,13 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "storecategory": {
+      "type": "hasMany",
+      "model": "StoreCategory",
+      "foreignKey": "store_id"
+    } 
+  },
   "acls": [],
   "methods": {}
 }

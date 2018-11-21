@@ -40,7 +40,12 @@ module.exports = function(Uploadinformation) {
               throw message;
               break;
             } else {
-              if(!Uploadinformation.prototype.isUrlValid(product.imageurl)){
+              function isUrlValid(userInput) {
+                var regexQuery = "^(https?://)?(www\\.)?([-a-z0-9]{1,63}\\.)*?[a-z0-9][-a-z0-9]{0,61}[a-z0-9]\\.[a-z]{2,6}(/[-\\w@\\+\\.~#\\?&/=%]*)?$";
+                var url = new RegExp(regexQuery,"i");
+                return url.test(userInput);
+              }
+              if(!Uploadinformation.prototype.isUrlValid(product.image_url)){
                 let message = "Image url is inavlid at row:" + i
                 //await addUploadinformation(message, filename, storeid, 0, Uploadinformation);
                 await Uploadinformation.prototype.updateUploadinformation(uploadRes, message, filename, storeid, 0, Uploadinformation);
@@ -50,7 +55,7 @@ module.exports = function(Uploadinformation) {
                 data.store_id = storeid;         
                 data.title = product.title;
                 data.description = product.description;
-                data.image = product.imageurl;
+                data.image = product.image_url;
                 data.category = product.category;
                 let price = product.price === '' ? 0 : product.price;
                 data.price = parseFloat(price);

@@ -1,0 +1,23 @@
+{
+  "name": "StoreCategory",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "store_id": {
+      "type": "number"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "store": {
+      "type": "belongsTo",
+      "model": "store",
+      "foreignKey": "id"
+    } 
+  },
+  "acls": [],
+  "methods": {}
+}

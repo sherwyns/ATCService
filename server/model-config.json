@@ -63,7 +63,7 @@
     "dataSource": "mysqlds",
     "public": true
   },
-  "store": {
+  "Store": {
     "dataSource": "mysqlds",
     "public": true
   },
@@ -74,5 +74,9 @@
   "favorite": {
     "dataSource": "mysqlds",
     "public": true
+  },
+  "StoreCategory": {
+    "dataSource": "mysqlds",
+    "public": false
   }
 }

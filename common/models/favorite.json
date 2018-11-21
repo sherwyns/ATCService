@@ -12,11 +12,11 @@
     },
     "store": {
       "type": "any",
-      "required": true
+      "required": false
     },
     "product": {
       "type": "any",
-      "required": true
+      "required": false
     }
   },
   "validations": [],
