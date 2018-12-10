@@ -1,0 +1,52 @@
+{
+  "name": "address",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "user_id": {
+      "type": "number",
+      "required": true
+    },
+    "store_id": {
+      "type": "number",
+      "required": true
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "adddressone": {
+      "type": "string",
+      "required": true
+    },
+    "addresstwo": {
+      "type": "string",
+      "required": false
+    },    
+    "suite": {
+      "type": "number"
+    },
+    "city": {
+      "type": "string",
+      "required": true
+    },
+    "state": {
+      "type": "string",
+      "required": true
+    },
+    "zipcode": {
+      "type": "number",
+      "required": true
+    },
+    "phonenumber": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

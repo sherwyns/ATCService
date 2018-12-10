@@ -3,20 +3,8 @@ let log = require('./../../server/logger');
 let disableMethods = require('../../server/disable-methods');
 
 module.exports = function(Category) {
-  Category.remoteMethod('getCategories', {
-    description: 'This will list all categories',
-    accepts: [],
-    http: {
-      path: '/getCategories',
-      verb: 'get',
-    },
-    returns: {
-      arg: 'status',
-      type: 'object',
 
-    },
-  });
-  Category.getCategories = function(cb) {
+  Category.getcategories = function(cb) {
     try {
       let db =  Category.dataSource;
       let sql = 'select * from category where parent_id = 0';
@@ -29,6 +17,20 @@ module.exports = function(Category) {
       log.error(err);
     }
   };
+
+  Category.remoteMethod('getcategories', {
+    description: 'This will list all categories',
+    accepts: [],
+    http: {
+      path: '/getcategories',
+      verb: 'get',
+    },
+    returns: {
+      arg: 'status',
+      type: 'object',
+
+    },
+  });
 
   Category.remoteMethod('getCategoriesById', {
     accepts: {
@@ -61,5 +63,7 @@ module.exports = function(Category) {
       log.error(err);
     }
   };
+
+  
 };
 

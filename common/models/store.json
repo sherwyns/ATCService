@@ -13,7 +13,7 @@
     },
     "shop_name": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "name": {
       "type": "string",
@@ -21,11 +21,11 @@
     },
     "tax_id": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "deactivate_account": {
       "type": "number",
-      "required": true
+      "required": false
     },
     "store_url": {
       "type": "string",
@@ -33,7 +33,7 @@
     },
     "site_status": {
       "type": "number",
-      "required": true
+      "required": false
     },
     "business_type": {
       "type": "string",
@@ -41,7 +41,7 @@
     },
     "service": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "timezone": {
       "type": "string",
@@ -65,7 +65,7 @@
     },
     "neighbourhood": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "latitude": {
       "type": "number",
@@ -74,24 +74,10 @@
     "longitude": {
       "type": "number",
       "required": true
-    },
-    "created_id": {
-      "type": "number",
-      "required": true
-    },
-    "modified_id": {
-      "type": "number",
-      "required": true
     }
   },
   "validations": [],
-  "relations": {
-    "storecategory": {
-      "type": "hasMany",
-      "model": "StoreCategory",
-      "foreignKey": "store_id"
-    } 
-  },
+  "relations": {},
   "acls": [],
   "methods": {}
 }

@@ -63,7 +63,6 @@ app.start = function() {
     }
   });
 };
-
 app.use(loopback.static(path.resolve(__dirname, './local-storage')));
 
 // Bootstrap the application, configure models, datasources and middleware.

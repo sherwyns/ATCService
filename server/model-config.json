@@ -78,5 +78,9 @@
   "StoreCategory": {
     "dataSource": "mysqlds",
     "public": false
+  },
+  "address": {
+    "dataSource": "mysqlds",
+    "public": false
   }
 }
