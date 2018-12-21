@@ -1,6 +1,6 @@
 {
-  "name": "account_settings",
-  "plural": "account_settings",
+  "name": "search",
+  "plural": "search",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {

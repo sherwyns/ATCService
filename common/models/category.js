@@ -3,11 +3,10 @@ let log = require('./../../server/logger');
 let disableMethods = require('../../server/disable-methods');
 
 module.exports = function(Category) {
-
-  Category.getcategories = function(cb) {
+  Category.list = function(cb) {
     try {
       let db =  Category.dataSource;
-      let sql = 'select * from category where parent_id = 0';
+      let sql = 'SELECT id, name,  image_url FROM `category` WHERE id NOT IN(SELECT DISTINCT parent_id FROM category) ORDER BY name ASC';
       db.connector.execute(sql, function(err, categories) {
         if (err)
           throw (err);
@@ -18,15 +17,15 @@ module.exports = function(Category) {
     }
   };
 
-  Category.remoteMethod('getcategories', {
+  Category.remoteMethod('list', {
     description: 'This will list all categories',
     accepts: [],
     http: {
-      path: '/getcategories',
+      path: '/list',
       verb: 'get',
     },
     returns: {
-      arg: 'status',
+      arg: 'data',
       type: 'object',
 
     },
@@ -63,7 +62,5 @@ module.exports = function(Category) {
       log.error(err);
     }
   };
-
-  
 };
 

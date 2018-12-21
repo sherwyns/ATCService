@@ -24,7 +24,7 @@
     "addresstwo": {
       "type": "string",
       "required": false
-    },    
+    },
     "suite": {
       "type": "number"
     },

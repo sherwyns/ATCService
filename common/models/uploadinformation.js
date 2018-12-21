@@ -9,7 +9,6 @@ module.exports = function(Uploadinformation) {
     let products = req.body.data;
     let storeid  = req.body.storeid;
     let filename  = req.body.filename;
-  
     try {
           let uploadRes = await Uploadinformation.prototype.addUploadinformation("progress", filename, storeid, 0, Uploadinformation);
           let values = await Uploadinformation.prototype.getProducts(uploadRes, products, storeid, filename, Uploadinformation);

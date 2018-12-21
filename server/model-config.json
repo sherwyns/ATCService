@@ -82,5 +82,9 @@
   "address": {
     "dataSource": "mysqlds",
     "public": false
+  },
+  "search": {
+    "dataSource": "mysqlds",
+    "public": true
   }
 }
