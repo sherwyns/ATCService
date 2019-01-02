@@ -9,6 +9,10 @@ let logger = bunyan.createLogger({
     stream: process.stdout,            // log INFO and above to stdout
   },
   {
+    level: 'debug',
+    stream: process.stdout,            // log INFO and above to stdout
+  },
+  {
     stream: new RotatingFileStream({
       level: 'error',
       path: './server/log/error.log',  // log ERROR and above to a file
