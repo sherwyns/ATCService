@@ -93,5 +93,9 @@
   },
   "Email": {
     "dataSource": "Emailds"
+  },
+  "shopifyaccesstoken": {
+    "dataSource": "mysqlds",
+    "public": false
   }
 }

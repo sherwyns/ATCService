@@ -1,0 +1,26 @@
+{
+  "name": "shopifyaccesstoken",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "store_id": {
+      "type": "number",
+      "required": true
+    },
+    "shop_domain": {
+      "type": "string",
+      "required": true
+    },    
+    "access_token": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

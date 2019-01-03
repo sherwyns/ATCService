@@ -6,7 +6,7 @@ const env = process.env.APP_ENV;
 
 const shopifyAccessTokenUrl = '/admin/oauth/access_token';
 const shopifyShopUrl = '/admin/shop.json';
-const shopifyReadProductUrl = '/admin/product.json';
+const shopifyReadProductUrl = '/admin/products.json';
 const scopes = 'read_products,write_products';
 const clientApiKey = '5db1f40a4062235576a968bf57b77f8c';
 

@@ -16,15 +16,17 @@
   "Emailds": {
     "name": "Emailds",
     "connector": "mail",
-    "transports": [{
-      "type": "SMTP",
-      "host": "smtp.gmail.com",
-      "secure": true,
-      "port": 465,
-      "auth": {
-        "user": "ravik@enqos.com",
-        "pass": "enqos#123"
+    "transports": [
+      {
+        "type": "SMTP",
+        "host": "smtp.gmail.com",
+        "secure": true,
+        "port": 465,
+        "auth": {
+          "user": "ravik@enqos.com",
+          "pass": "enqos#123"
+        }
       }
-    }]
+    ]
   }
 }

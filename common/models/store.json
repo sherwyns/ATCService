@@ -37,7 +37,7 @@
     },
     "business_type": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "service": {
       "type": "string",
@@ -45,23 +45,23 @@
     },
     "timezone": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "workinghours": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "image": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "tagline": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "description": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "neighbourhood": {
       "type": "string",
@@ -69,11 +69,11 @@
     },
     "latitude": {
       "type": "number",
-      "required": true
+      "required": false
     },
     "longitude": {
       "type": "number",
-      "required": true
+      "required": false
     }
   },
   "validations": [],
