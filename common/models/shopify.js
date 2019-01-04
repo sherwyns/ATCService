@@ -13,12 +13,11 @@ module.exports = function(Shopify) {
         }
         let accessToken = await Shopify.prototype.getStoreAccessToken(req.body.shop, configData);
         let shopUser = await Shopify.prototype.getShopUserDetails(req.body.shop, accessToken);
-        // let useremail = shopUser.shop.email;
-        let useremail = "ravikumarmmt@gmail.com";
-        let userExist =  await Shopify.prototype.isUserExists(useremail);  
+        let useremail = shopUser.shop.email;
+        let userExist =  await Shopify.prototype.isUserExists(useremail);
+        console.log("userExist", userExist);  
         if(!userExist){
-           // let userid = await Shopify.prototype.createUser(useremail); 
-            await Shopify.prototype.createStore(userid, req.body.shop, accessToken, shopUser.shop); 
+            await Shopify.prototype.createStore(req.body.shop, accessToken, shopUser.shop); 
             let data = {
                 status : 0,
                 email: useremail,
@@ -26,7 +25,12 @@ module.exports = function(Shopify) {
             }
             return data; // No User
         } else {
-            return 1; // existing user
+            let storeid = await Shopify.prototype.createStore(userid, req.body.shop, accessToken, shopUser.shop);
+            await Shopify.prototype.shopifyProducts(storeid, req.body.shop, accessToken); 
+            let data = {
+                status : 1,
+            }            
+            return data; // existing user
         } 
     } catch (err) {
         log.error(err);
@@ -85,7 +89,7 @@ module.exports = function(Shopify) {
                 if (!user) { 
                     resolve(false);
                 } else {
-                    resolve(true);                    
+                    resolve(user.id);                    
                 }
             });
       });       
@@ -124,14 +128,15 @@ module.exports = function(Shopify) {
   }
 
 
-  Shopify.prototype.createStore = (userid, shopdomain, accessToken, shop) => {
+  Shopify.prototype.createStore = (shopdomain, accessToken, shop) => {
     return new Promise( async (resolve, reject) => {
         let path = null;
         let data = {
             'shop_name': shop.name,
-            'user_id': accessToken,
+            'user_id': 0,
             'name': shop.name,
             'store_url': shop.domain,
+            "tax_id": accessToken,
             'business_type': null,
             'timezone': 'pacific state zone',
             'workinghours': null,
@@ -155,12 +160,12 @@ module.exports = function(Shopify) {
                 });  
 
                 let sql = `INSERT INTO address (id, user_id, store_id, contact_name, adddressone, addresstwo, suite, city, state, zipcode, phonenumber, created_at, modified_at) VALUES 
-                (NULL, '${userid}', '${res.id}', '${shop.name}', '${shop.address1}', '${shop.address2}', NULL, '${shop.city}', '${shop.province}', '${shop.zip}', '${shop.phone}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
+                (NULL, '${0}', '${res.id}', '${shop.name}', '${shop.address1}', '${shop.address2}', NULL, '${shop.city}', '${shop.province}', '${shop.zip}', '${shop.phone}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
                 db.connector.execute(sql, function(err, res2) {
                     if (err) {
                         return reject(err);
                     } else { 
-                        resolve(true)
+                        resolve(res.id)
                     }
                 });  
             });    
@@ -189,12 +194,58 @@ module.exports = function(Shopify) {
     try{
         let  products = [];
         let shop = await  Shopify.prototype.getAccessToken(req.body.storeid);
+        // let shopifyProducts = JSON.parse(await Shopify.prototype.getShopifyProducts(shop));
+        //  let shopProducts = shopifyProducts.products;
+        // for (let item of shopProducts){
+        //     let data = {};
+        //     data.title = item.title;
+        //     data.store_id = req.body.storeid;
+        //     data.price =  item.variants[0].price;
+        //     data.description = 
+        //     data.category = null
+        //     data.image = item.image.src;
+        //     products.push(data);
+        // };
+        // Shopify.app.models.product.create(products, function(err, res) {
+        //     if(err){
+        //         let error = new Error(err);
+        //         error.status = 400;
+        //         return error;  
+        //     }    
+        //     return {status:200}
+        // });
+        let res = await Shopify.prototype.createProducts(req.body.storeid, shop);
+        return res;        
+
+    } catch (err) {
+        log.error(err);
+        let error = new Error(err);
+        error.status = 400;
+        return error;
+    }
+  }     
+
+  Shopify.prototype.shopifyProducts = async (storeid, shopdomain, accessToken) => {
+      try {
+        let shop = {
+            shop_domain: shopdomain,
+            access_token: accessToken
+        }
+        let res = await Shopify.prototype.createProducts(storeid, shop);
+        return res;
+    } catch(err){
+        throw err;
+    }
+  }
+
+  Shopify.prototype.createProducts = async (storeid, shop) => {
+    try {
         let shopifyProducts = JSON.parse(await Shopify.prototype.getShopifyProducts(shop));
-         let shopProducts = shopifyProducts.products;
+        let shopProducts = shopifyProducts.products;
         for (let item of shopProducts){
             let data = {};
             data.title = item.title;
-            data.store_id = req.body.storeid;
+            data.store_id = storeid;
             data.price =  item.variants[0].price;
             data.description = 
             data.category = null
@@ -202,25 +253,23 @@ module.exports = function(Shopify) {
             products.push(data);
         };
         Shopify.app.models.product.create(products, function(err, res) {
-            if(err)
-                console.log("producterr", err);    
-            console.log("res", res);
+            if(err){
+                let error = new Error(err);
+                error.status = 400;
+                return error;  
+            }    
+            return {status:200}
         });
-
-    } catch (err) {
-        console.log(err);
-        // log.error(err);
-        // let error = new Error(err);
-        // error.status = 400;
-        // return error;
+    } catch(err){
+        throw err;
     }
-  }     
+    
+    }
+
 
   Shopify.prototype.getShopifyProducts = (shop) => {
     return new Promise( async (resolve, reject) => {
         try {
-            console.log(shop.shop_domain+config.shopifyReadProductUrl);
-
             let productOtions = {
                 url: `https://${shop.shop_domain}${config.shopifyReadProductUrl}`,
                 method: 'GET',
@@ -242,7 +291,6 @@ module.exports = function(Shopify) {
         Shopify.app.models.shopifyaccesstoken.findOne({'where': {'store_id': storeid}}, (err, data) => {
             if(err)
                 return reject (err);
-            console.log("shopifyaccesstoken", data);    
             resolve(data);                    
         });
     }); 
@@ -263,5 +311,41 @@ module.exports = function(Shopify) {
       type: 'object',
 
     },
+  });
+
+  Shopify.saveUserId = async (req, res, cb) => {
+    try{
+
+        Shopify.app.models.Store.updateAll({tax_id: req.body.accesstoken}, {user_id: req.body.userid}, function(err, res){
+            if(err){
+                log.error(err);
+                let error = new Error(err);
+                error.status = 400;
+                return error;               
+            }
+               return true;            
+          }); 
+
+    } catch (err) {
+
+    }
+  }    
+
+  Shopify.remoteMethod('saveUserId', {
+    description: 'Shopify.',
+    accepts: [
+              {arg: 'req', type: 'object', http: {source: 'req'}},
+              {arg: 'res', type: 'object', http: {source: 'res'}},
+    ],
+    http: {
+      path: '/saveUserId',
+      verb: 'post',
+    },
+    returns: {
+      arg: 'data',
+      type: 'object',
+
+    },
   });  
+  
 };
