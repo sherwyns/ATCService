@@ -2,9 +2,8 @@
 let log = require('./../../server/logger');
 let multer = require('multer');
 let path = require('path');
-const request = require('request');
-//let url = 'http://34.209.125.112/';
-let url = 'http://localhost:3000/';
+let config = require('./../../env.config');
+let url = config.domain;
 
 module.exports = function(Store) {
   Store.getstores = function(req, res, cb) {
