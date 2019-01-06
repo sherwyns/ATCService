@@ -230,12 +230,12 @@ module.exports = function(Product) {
       //             ON cat.id = pdc.catgory_id
       //             WHERE pd.store_id = ${req.params.id}`;
 
-      let sql = `SELECT  pd.title, cat.name as category_name, cat.id as category_id, pd.description, pd.image as product_image, pd.price, pd.id FROM product as pd
-                  JOIN productcategory as pdc
+      let sql = `SELECT  pd.title, pdc.catgory_id as category_id, (SELECT name from productcategories WHERE id = pdc.catgory_id) as dbcategory_name,
+                  (IF(ISNULL(pd.shopifycategory), (SELECT name from productcategories WHERE id = pdc.catgory_id), pd.shopifycategory))as category_name,
+                  pd.shopifycategory, pd.description, pd.image as product_image, pd.price, pd.id FROM product as pd
+                  LEFT JOIN productcategory as pdc
                   ON pdc.product_id = pd.id
-                  JOIN category as cat
-                  ON cat.id = pdc.catgory_id
-                  WHERE pd.store_id = ${req.params.id} ORDER BY pd.id ASC`;
+                  WHERE pd.store_id   = ${req.params.id} ORDER BY pd.id ASC`;
 
       db.connector.execute(sql, function(err, res) {
         if (err) {
@@ -252,6 +252,8 @@ module.exports = function(Product) {
           rowData.push(item.product_image);
           rowData.push(item.price);
           rowData.push(item.id);
+          rowData.push(item.dbcategory_name);
+          rowData.push(item.shopifycategory);
           products.push(rowData);
         });
 
