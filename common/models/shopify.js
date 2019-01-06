@@ -260,49 +260,110 @@ module.exports = function(Shopify) {
 
   Shopify.prototype.createStore = (userid, shopdomain, accessToken, shop) => {
     return new Promise( async (resolve, reject) => {
-        let path = null;
-        let userId = !userid ? 0 : userid;
-        let data = {
-            'shop_name': shop.name,
-            'user_id': userId,
-            'name': shop.name,
-            'store_url': shop.domain,
-            "tax_id": accessToken,
-            'business_type': null,
-            'timezone': 'pacific state zone',
-            'workinghours': null,
-            'image': path,
-            'tagline': null,
-            'description': null,
-            "neighbourhood":null,
-            'latitude': shop.latitude,
-            'longitude': shop.longitude,
-          };
-            Shopify.app.models.Store.create(data, function(err, res) {
-                if (err) {
-                    return reject(err);
-                }
-                let db =  Shopify.dataSource;
-
-                let tokensql = `INSERT INTO shopifyaccesstoken (id, store_id, shop_domain, access_token) VALUES (NULL, '${res.id}', '${shopdomain}', '${accessToken}');`;
-                db.connector.execute(tokensql, function(err, res1) {
-                    if (err) 
-                        return reject(err);
-                });  
-
-                let sql = `INSERT INTO address (id, user_id, store_id, contact_name, adddressone, addresstwo, suite, city, state, zipcode, phonenumber, created_at, modified_at) VALUES 
-                (NULL, '${0}', '${res.id}', '${shop.name}', '${shop.address1}', '${shop.address2}', NULL, '${shop.city}', '${shop.province}', '${shop.zip}', '${shop.phone}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
-                db.connector.execute(sql, function(err, res2) {
+        try{
+            let isShopExists = await Shopify.prototype.isShopExists(shop.id);
+            if(!isShopExists) {
+                let path = null;
+                let userId = !userid ? 0 : userid;
+                let data = {
+                    'shop_name': shop.name,
+                    'user_id': userId,
+                    'name': shop.name,
+                    'store_url': shop.domain,
+                    "tax_id": accessToken,
+                    "shopifyshopid": shop.id,
+                    'business_type': null,
+                    'timezone': 'pacific state zone',
+                    'workinghours': null,
+                    'image': path,
+                    'tagline': null,
+                    'description': null,
+                    "neighbourhood":null,
+                    'latitude': shop.latitude,
+                    'longitude': shop.longitude,
+                };
+                Shopify.app.models.Store.create(data, function(err, res) {
                     if (err) {
                         return reject(err);
-                    } else { 
-                        resolve(res.id)
                     }
-                });  
-            });    
+                    let db =  Shopify.dataSource;
+
+                    let tokensql = `INSERT INTO shopifyaccesstoken (id, store_id, shop_domain, access_token) VALUES (NULL, '${res.id}', '${shopdomain}', '${accessToken}');`;
+                    db.connector.execute(tokensql, function(err, res1) {
+                        if (err) 
+                            return reject(err);
+                    });  
+
+                    let sql = `INSERT INTO address (id, user_id, store_id, contact_name, adddressone, addresstwo, suite, city, state, zipcode, phonenumber, created_at, modified_at) VALUES 
+                    (NULL, '${0}', '${res.id}', '${shop.name}', '${shop.address1}', '${shop.address2}', NULL, '${shop.city}', '${shop.province}', '${shop.zip}', '${shop.phone}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
+                    db.connector.execute(sql, function(err, res2) {
+                        if (err) {
+                            return reject(err);
+                        } else { 
+                            resolve(res.id)
+                        }
+                    });  
+                });
+            } else {
+                await Shopify.prototype.updateStore(isShopExists, shop, accessToken);
+                await Shopify.prototype.updateShopifyAccesstoken(isShopExists, shop, accessToken);
+            }
+        } catch (err) {
+            reject(err);
+        }  
 
     });       
   }
+
+    Shopify.prototype.isShopExists = (shopifyshopid) => {
+        return new Promise( async (resolve, reject) => {
+            Shopify.app.models.Store.find({'where': {'shopifyshopid': shopifyshopid}}, (err, res) => {
+                if(err)
+                    reject (err);
+                if (!res) { 
+                    resolve(false);
+                } else {
+                    resolve(res.id);                    
+                }
+            });
+        });       
+    }
+
+    Shopify.prototype.updateStore = (storeid, shop, accessToken) => {
+        return new Promise( async (resolve, reject) => {
+            let data = {
+                tax_id: accessToken,
+                shopifyshopid: shop.id
+            }
+            Shopify.app.models.Store.updateAll({id: storeid}, data, function(err, res){
+                if(err){
+                    log.error(err);
+                    let error = new Error(err);
+                    error.status = 400;
+                    reject(error);               
+                }
+                   resolve(true);            
+            }); 
+        });       
+    }
+    Shopify.prototype.updateShopifyAccesstoken = (storeid, shop, accessToken) => {
+        return new Promise( async (resolve, reject) => {
+            let data = {
+                store_id: storeid,
+                access_token: accessToken
+            }
+            Shopify.app.models.shopifyaccesstoken.updateAll({shop_domain: shop.domain}, data, function(err, res){
+                if(err){
+                    log.error(err);
+                    let error = new Error(err);
+                    error.status = 400;
+                    reject(error);               
+                }
+                resolve(true);           
+            }); 
+        });       
+    }    
+
  
   Shopify.remoteMethod('validateuser', {
     description: 'Shopify.',
@@ -405,7 +466,7 @@ module.exports = function(Shopify) {
                     }
                 });
           });       
-      }
+    }
 
   Shopify.prototype.getShopifyProducts = (shop) => {
     return new Promise( async (resolve, reject) => {

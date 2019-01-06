@@ -554,7 +554,7 @@ module.exports = function(Store) {
     let db =  Store.dataSource;
     let sql = `SELECT id as userid, username, email, (SELECT id FROM Store as st WHERE st.user_id = us.id) as storeid, (SELECT  IF(id != NULL, NULL, (SELECT COUNT(id) FROM product as pt WHERE pt.store_id = st.id)) FROM Store as st WHERE st.user_id = us.id) as productcount  
                 FROM User as us
-                WHERE us.id= ${req.body.userid}`;
+                WHERE us.id = ${req.body.userid}`;
     db.connector.execute(sql, function(err, res) {
       if (err) {
         let error = new Error(err);
