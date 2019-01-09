@@ -78,7 +78,8 @@ module.exports = function(Product) {
 
   Product.edit = function(req, res, cb) {
     let upload = multer({storage: storage}).array('product', 12);
-    upload(req, res, function(err) {
+    upload(req, res, async (err) => {
+      try{
       if (err) {
         let error = new Error(err);
         error.status = 400;
@@ -108,28 +109,163 @@ module.exports = function(Product) {
           'image': req.body.image,
         };
       }
-      Product.updateAll({id: Number(req.body.product_id)}, data, function(err, res) {
-        if (err) {
-          let error = new Error(err);
-          error.status = 400;
-          return cb(error);
-        }
-        let db =  Product.dataSource;
-        console.log(req.body.category, req.body.product_id);
-        let sql = `UPDATE productcategory SET catgory_id = ${req.body.category} WHERE product_id = ${req.body.product_id}`;
-        db.connector.execute(sql, function(err2, res2) {
-          if (err2) {
-            let error = new Error(err2);
+      if (req.body.shopifycategory && req.body.productCategoryId !== 0) {
+          let res = await Product.prototype.uppdateProduct(req.body, data, req.body.product_id);
+          return cb(null, res);
+      } else {
+        Product.updateAll({id: Number(req.body.product_id)}, data, function(err, res) {
+          if (err) {
+            let error = new Error(err);
             error.status = 400;
             return cb(error);
           }
-          cb(null, res2);
-        });
-       // return;
-        // cb(null, res);
-      });
+          let db =  Product.dataSource;
+          let sql = `UPDATE productcategory SET catgory_id = ${req.body.category} WHERE product_id = ${req.body.product_id}`;
+          db.connector.execute(sql, function(err2, res2) {
+            if (err2) {
+              let error = new Error(err2);
+              error.status = 400;
+              return cb(error);
+            }
+            cb(null, res2);
+          });
+
+        return cb(null, res);
+          
+       });
+      }
+        } catch (err) {
+          log.error(err);
+          let error = new Error(err);
+          error.status = 400;
+          return error;
+        }      
     });
   };
+
+  Product.prototype.uppdateProduct = async (req, data, productid) => {
+    try{
+          let updateProduct = await Product.prototype.updateDbProduct(data, productid);
+          if(updateProduct){
+            let productids = await Product.prototype.getProductIds(req, data);
+            for(let item of productids) {
+              await Product.prototype.insertProductCategories(req, item.id);
+              await Product.prototype.updateshopifycategory(item.id);
+            } 
+          }
+        } catch (err) {
+          console.log(err);
+          throw err;
+          //log.error(err);
+  
+        }
+  }
+  Product.prototype.updateDbProduct = (data, productid) => {
+    return new Promise( async (resolve, reject) => {
+      try {
+         Product.updateAll({id: Number(productid)}, data, function(err, res) {
+          if (err) {
+            return reject(err);
+          }
+          resolve(true);
+        });
+      } catch (err) {
+         reject(err);
+      }
+    });    
+  }
+
+  Product.prototype.updateshopifycategory = (productid) => {
+    return new Promise( async (resolve, reject) => {
+      try {
+            let db =  Product.dataSource;
+            let sql = `UPDATE product SET shopifycategory = NULL WHERE id = ${productid}`;
+            db.connector.execute(sql, function(err, res) {
+            if (err) {
+                return reject(err);
+            }
+            resolve(true);
+          });
+      } catch (err) {
+         reject(err);
+      }
+    });    
+  }  
+
+  Product.prototype.insertProductCategories = (req, productid) => {
+    return new Promise( async (resolve, reject) => {
+        try {
+              let db =  Product.dataSource;
+              let sql = `INSERT INTO productcategory  VALUES (NULL, '${req.productCategoryId}', '${productid}');`;
+              db.connector.execute(sql, function(err, res) {
+              if (err) {
+                  return reject(err);
+              }
+              resolve(true);
+            });
+        } catch (err) {
+           reject(err);
+        }
+    });
+  }  
+
+  Product.prototype.getProductIds = (data, productid) => {
+    return new Promise( async (resolve, reject) => {
+        try {
+              Product.updateAll({id: Number(productid)}, data, function(err, res) {
+                if (err) {
+                  return reject(err);
+                }
+                resolve(true);
+              });
+        } catch (err) {
+           reject(err);
+        }
+    });
+  }  
+
+
+  Product.prototype.getProductIds = (req, data) => {
+    return new Promise( async (resolve, reject) => {
+        try {
+          let db =  Product.dataSource;
+          let sql = `SELECT id FROM product WHERE shopifycategory = '${req.shopifycategory}'`;
+          let params = [req.shopifycategory];
+          db.connector.execute(sql, function(err, res) {
+            if (err) {
+              return reject(err);
+            }
+       
+            resolve(JSON.parse(JSON.stringify(res)));
+          });
+
+
+        } catch (err) {
+           reject(err);
+        }
+    });
+}  
+
+  Product.prototype.getProductIds = (req, data) => {
+    return new Promise( async (resolve, reject) => {
+        try {
+          let db =  Product.dataSource;
+          let sql = `SELECT id FROM product WHERE shopifycategory = '${req.shopifycategory}'`;
+          let params = [req.shopifycategory];
+          db.connector.execute(sql, function(err, res) {
+            if (err) {
+              return reject(err);
+            }
+       
+            resolve(JSON.parse(JSON.stringify(res)));
+          });
+
+
+        } catch (err) {
+           reject(err);
+        }
+    });
+}
 
   Product.remoteMethod('edit', {
     description: 'API to update product information.',

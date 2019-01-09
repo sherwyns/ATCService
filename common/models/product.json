@@ -32,11 +32,11 @@
     },
     "shopifycategory": {
       "type": "string",
-      "required": true
+      "required": false
     },    
     "image": {
       "type": "string",
-      "required": true
+      "required": false
     }
   },
   "validations": [],

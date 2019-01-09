@@ -14,7 +14,7 @@ const clientApiKey = '5db1f40a4062235576a968bf57b77f8c';
 
 const local = {
   domain: 'http://localhost:3000/',
-  shopifydomain: 'https://34.209.125.112/',
+  shopifydomain: 'https://dev.aroundthecorner.store/',
   clientApiKey: clientApiKey,
   scopes: scopes,
   apiKey: process.env.LOCAL_API_KEY,
@@ -24,13 +24,13 @@ const local = {
   shopifyReadProductUrl: shopifyReadProductUrl,
   shopifyWebHookUrl: shopifyWebHookUrl,
   shopifydeleteWebHookUrl: shopifydeleteWebHookUrl,
-  redirectUri: 'http://localhost:3001/signup',
+  redirectUri: 'http://localhost:3001/route',
   fileDirectory: process.env.LOCAL_FILE_DIRECTORY,
 };
 
 const dev = {
-  domain: 'https://34.209.125.112/',
-  shopifydomain: 'https://34.209.125.112/',
+  domain: 'https://dev.aroundthecorner.store/',
+  shopifydomain: 'https://dev.aroundthecorner.store/',
   clientApiKey: clientApiKey,
   scopes: scopes,
   apiKey: process.env.DEV_API_KEY,
@@ -40,7 +40,7 @@ const dev = {
   shopifyReadProductUrl: shopifyReadProductUrl,
   shopifyWebHookUrl: shopifyWebHookUrl,
   shopifydeleteWebHookUrl: shopifydeleteWebHookUrl,
-  redirectUri: 'http://34.209.125.112:8081/signup',
+  redirectUri: 'https://dev.aroundthecorner.store/route',
   fileDirectory: process.env.DEV_FILE_DIRECTORY,
 };
 
@@ -56,7 +56,7 @@ const production = {
   shopifyReadProductUrl: shopifyReadProductUrl,
   shopifyWebHookUrl: shopifyWebHookUrl,
   shopifydeleteWebHookUrl: shopifydeleteWebHookUrl,
-  redirectUri: 'https://api.aroundthecorner.store/signup',
+  redirectUri: 'https://api.aroundthecorner.store/route',
   fileDirectory: process.env.PRODUCTION_FILE_DIRECTORY,
 };
 

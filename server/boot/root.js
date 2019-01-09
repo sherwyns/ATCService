@@ -21,31 +21,6 @@ module.exports = function(server) {
       log.error(err);
     }
   });
-
-  router.post('/products/create', (req, res) => {
-    try {
-      console.log('reqfromwebhook=>', req.body);
-    } catch (err) {
-      log.error(err);
-    }
-  });
-
-  router.post('/products/update', (req, res) => {
-    try {
-      console.log('reqfromwebhook=>', req.body);
-    } catch (err) {
-      log.error(err);
-    }
-  });
-
-  router.post('/products/delete', (req, res) => {
-    try {
-      console.log('reqfromwebhook=>', req.body);
-    } catch (err) {
-      log.error(err);
-    }
-  });
-
   // End Of Shopify
 
   server.use(router);

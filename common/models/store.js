@@ -583,4 +583,94 @@ module.exports = function(Store) {
 
     },
   });
+
+  Store.productscreate =  function(req, res, cb) {
+    console.log('req=>', req.body);
+  }
+
+
+  Store.remoteMethod('productscreate', {
+    accepts: [
+      {arg: 'req', type: 'object', http: {source: 'req'}},
+      {arg: 'res', type: 'object', http: {source: 'res'}},
+    ],
+    http: {
+      path: '/productscreate',
+      verb: 'post',
+    },
+    returns: {
+      arg: 'data',
+      type: 'object',
+
+    },
+  });
+
+  Store.productscreate =  function(req, res, cb) {
+    console.log('req=>', req.body);
+  }
+
+
+  Store.remoteMethod('productscreate', {
+    accepts: [
+      {arg: 'req', type: 'object', http: {source: 'req'}},
+      {arg: 'res', type: 'object', http: {source: 'res'}},
+    ],
+    http: {
+      path: '/productscreate',
+      verb: 'post',
+    },
+    returns: {
+      arg: 'data',
+      type: 'object',
+
+    },
+    
+  });
+
+  Store.productsupdate =  function(req, res, cb) {
+    console.log('reqproductsupdate=>', req.body);
+  }
+
+
+  Store.remoteMethod('productsupdate', {
+    accepts: [
+      {arg: 'req', type: 'object', http: {source: 'req'}},
+      {arg: 'res', type: 'object', http: {source: 'res'}},
+    ],
+    http: {
+      path: '/productsupdate',
+      verb: 'post',
+    },
+    returns: {
+      arg: 'data',
+      type: 'object',
+
+    },
+    
+  });
+
+
+  Store.productsdelete =  function(req, res, cb) {
+    console.log('reqproductsdelete=>', req.body);
+  }
+
+
+  Store.remoteMethod('productsdelete', {
+    accepts: [
+      {arg: 'req', type: 'object', http: {source: 'req'}},
+      {arg: 'res', type: 'object', http: {source: 'res'}},
+    ],
+    http: {
+      path: '/productsdelete',
+      verb: 'post',
+    },
+    returns: {
+      arg: 'data',
+      type: 'object',
+
+    },
+    
+  });
+
+
 };

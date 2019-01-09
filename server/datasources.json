@@ -23,8 +23,8 @@
         "secure": true,
         "port": 465,
         "auth": {
-          "user": "ravik@enqos.com",
-          "pass": "enqos#123"
+          "user": "",
+          "pass": ""
         }
       }
     ]

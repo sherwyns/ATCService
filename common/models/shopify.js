@@ -15,7 +15,8 @@ module.exports = function(Shopify) {
         await Shopify.prototype.deleteWebhooks(req.body.shop, accessToken);
         await Shopify.prototype.productCreate(req.body.shop, accessToken); 
         await Shopify.prototype.productUpdate(req.body.shop, accessToken); 
-        await Shopify.prototype.productDelete(req.body.shop, accessToken);        
+        await Shopify.prototype.productDelete(req.body.shop, accessToken);
+        await Shopify.prototype.appUninstall(req.body.shop, accessToken);        
         let shopUser = await Shopify.prototype.getShopUserDetails(req.body.shop, accessToken);
         let useremail = shopUser.shop.email;
         let userExist =  await Shopify.prototype.isUserExists(useremail);
@@ -36,11 +37,11 @@ module.exports = function(Shopify) {
             return data; // existing user
         } 
     } catch (err) {
-        console.log(err);
-        // log.error(err);
-        // let error = new Error(err);
-        // error.status = 400;
-        // return error;
+        // console.log(err);
+        log.error(err);
+        let error = new Error(err);
+        error.status = 400;
+        return error;
     }
     };
     Shopify.prototype.deleteWebhooks = (shop, accessToken) => {
@@ -100,7 +101,7 @@ module.exports = function(Shopify) {
                 let atcdata = {
                     'webhook': {
                     'topic': 'products/create',
-                    'address': config.shopifydomain,
+                    'address': `https://${config.domain}/api/shopify/productscreate`,
                     'format': 'json',
                     },
                 };
@@ -125,7 +126,7 @@ module.exports = function(Shopify) {
                 let atcdata = {
                     'webhook': {
                     'topic': 'products/update',
-                    'address': config.shopifydomain,
+                    'address': `https://${config.domain}/api/shopify/productsupdate`,
                     'format': 'json',
                     },
                 };
@@ -150,7 +151,7 @@ module.exports = function(Shopify) {
                 let atcdata = {
                     'webhook': {
                     'topic': 'products/delete',
-                    'address': config.shopifydomain,
+                    'address': `https://${config.domain}/api/shopify/productsdelete`,
                     'format': 'json',
                     },
                 };
@@ -165,10 +166,37 @@ module.exports = function(Shopify) {
                 console.log("products/delete");
                 resolve(true);
             } catch (err) {
-              //  reject(err);
+                reject(err);
             }
         });
-    }  
+    }
+
+    Shopify.prototype.appUninstall =  (shop, accessToken) => {
+        return new Promise( async (resolve, reject) => {
+            try {
+                let atcdata = {
+                    'webhook': {
+                    'topic': 'shop/update',
+                    'address': `https://${config.domain}/api/shopify/shopifyAppUninstall`,
+                    'format': 'json',
+                    },
+                };
+                    let shopOtions = {
+                    url: `https://${shop}${config.shopifyWebHookUrl}`,
+                    method: 'POST',
+                    json: true,
+                    body: atcdata,
+                    headers: { 'X-Shopify-Access-Token': accessToken, 'Content-Type': 'application/json', 'Accept': 'application/json'}           
+                }
+                let response = await request(shopOtions);     
+                console.log("shop/update");
+                resolve(true);
+            } catch (err) {
+              reject(err);
+            }
+        });
+    }
+
 
   Shopify.prototype.getStoreAccessToken = (shopDomain, configData) => {
 
@@ -305,8 +333,9 @@ module.exports = function(Shopify) {
                     });  
                 });
             } else {
-                await Shopify.prototype.updateStore(isShopExists, shop, accessToken);
-                await Shopify.prototype.updateShopifyAccesstoken(isShopExists, shop, accessToken);
+                 await Shopify.prototype.updateStore(isShopExists, shop, accessToken);
+                // await Shopify.prototype.updateShopifyAccesstoken(isShopExists, shop, accessToken);
+                resolve(isShopExists);
             }
         } catch (err) {
             reject(err);
@@ -317,12 +346,13 @@ module.exports = function(Shopify) {
 
     Shopify.prototype.isShopExists = (shopifyshopid) => {
         return new Promise( async (resolve, reject) => {
-            Shopify.app.models.Store.find({'where': {'shopifyshopid': shopifyshopid}}, (err, res) => {
+            Shopify.app.models.Store.findOne({'where': {'shopifyshopid': shopifyshopid}}, (err, res) => {
                 if(err)
                     reject (err);
                 if (!res) { 
                     resolve(false);
                 } else {
+                    console.log(res)
                     resolve(res.id);                    
                 }
             });
@@ -331,10 +361,13 @@ module.exports = function(Shopify) {
 
     Shopify.prototype.updateStore = (storeid, shop, accessToken) => {
         return new Promise( async (resolve, reject) => {
+            // let data = {
+            //     tax_id: accessToken,
+            //     shopifyshopid: shop.id
+            // }
             let data = {
-                tax_id: accessToken,
-                shopifyshopid: shop.id
-            }
+                deactivate_account: 1,
+            }            
             Shopify.app.models.Store.updateAll({id: storeid}, data, function(err, res){
                 if(err){
                     log.error(err);
@@ -386,9 +419,14 @@ module.exports = function(Shopify) {
     try{
        
         let shop = await  Shopify.prototype.getAccessToken(req.body.storeid);
-        let res = await Shopify.prototype.createProducts(req.body.storeid, shop);
-        if(res){
-            return {status:200}
+        console.log("shop", shop);
+        if(!shop){
+            return {status:0} 
+        } else {
+            let res = await Shopify.prototype.createProducts(req.body.storeid, shop);
+            if(res){
+                return {status:200}
+            }
         }
     } catch (err) {
         log.error(err);
@@ -421,23 +459,23 @@ module.exports = function(Shopify) {
             let shopProducts = shopifyProducts.products;
             for (let item of shopProducts){
                 let isProductExists = await Shopify.prototype.isProductExists(item.id);
+                let imgSrc  = !item.image ? item.image : item.image.src;
                 if(!isProductExists){
                     let data = {};
                     data.title = item.title;
                     data.store_id = storeid;
                     data.shopifyproductid = item.id,
-                    data.price =  item.variants[0].price;
+                    data.price =  !'variants' in item ? null : item.variants[0].price;
                     data.description = null,
                     data.category = null,
-                    data.shopifycategory = item.product_type,
-                    data.image = item.image.src;
+                    data.shopifycategory = !'product_type' in item ? null : item.product_type, //item['product_type'] != undefined
+                    data.image = imgSrc,
                     products.push(data);
                 }
             };
             if(products.length === 0){
                 resolve(true);  
             } else {    
-                console.log("products", products);
                 Shopify.app.models.product.create(products, function(err, res) {
                     if(err){
                         let error = new Error(err);
@@ -548,5 +586,253 @@ module.exports = function(Shopify) {
 
     },
   });  
+
+    
+    Shopify.productscreate =  async (req, res, cb) => {
+        try{
+            let request = req.body;
+            let ShopifyShopUrl = req.headers['x-shopify-shop-domain'];
+            let storeid = await Shopify.prototype.getStoreid(ShopifyShopUrl);
+            if(storeid){
+                await Shopify.prototype.createProduct(storeid, request);
+            }
+        } catch (err) {
+           log.error(err);
+        }
+    }
+
+    Shopify.prototype.getStoreid = (ShopifyShopUrl) => {
+        return new Promise( async (resolve, reject) => {
+            Shopify.app.models.Store.find({'where': {'store_url': ShopifyShopUrl}}, (err, res) => {
+                if(err)
+                    reject (err);
+                if (!res) { 
+                    resolve(false);
+                } else {
+                    resolve(res[0].id);                    
+                }
+            });
+        });       
+    }
+    Shopify.prototype.createProduct = (storeid, product) => {
+        return new Promise( async (resolve, reject) => {
+            try{
+                let  products = [];
+                let item = product;
+            // for (let item of product){
+                    let isProductExists = await Shopify.prototype.isProductExists(item.id);
+                    let imgSrc  = !item.image ? item.image : item.image.src;
+                    if(!isProductExists){
+                        let data = {};
+                        data.title = item.title;
+                        data.store_id = storeid;
+                        data.shopifyproductid = item.id,
+                        data.price =  item.variants[0].price;
+                        data.description = null,
+                        data.category = null,
+                        data.shopifycategory = item.product_type,
+                        data.image = imgSrc,
+                        products.push(data);
+                    }
+            // };
+
+                    if(products.length === 0){
+                        resolve(true);  
+                    } else {
+                        Shopify.app.models.product.create(products, function(err, res) {
+                            if(err){
+                                let error = new Error(err);
+                                error.status = 400;
+                                reject(error);  
+                            }    
+                            resolve(true);
+                        });
+                    }
+            } catch(err){
+                reject(err);  
+            }
+        })    
+    
+    }
+
+    Shopify.remoteMethod('productscreate', {
+        accepts: [
+            {arg: 'req', type: 'object', http: {source: 'req'}},
+            {arg: 'res', type: 'object', http: {source: 'res'}},
+        ],
+        http: {
+            path: '/productscreate',
+            verb: 'post',
+        },
+        returns: {
+            arg: 'data',
+            type: 'object',
+
+        },
+    });
+    
+
+    Shopify.productsupdate =  async (req, res, cb) => {
+        try{
+            let request = req.body;
+            let ShopifyShopUrl = req.headers['x-shopify-shop-domain'];
+            let storeid = await Shopify.prototype.getStoreid(ShopifyShopUrl);
+            if(storeid){
+                await Shopify.prototype.updateProduct(storeid, request);
+            }
+        } catch (err) {
+            log.error(err);
+        }
+    }
+
+    Shopify.prototype.updateProduct = (storeid, product) => {
+        return new Promise( async (resolve, reject) => {
+            try{
+                let item = product;
+                let results = await Shopify.prototype.getProduct(item.id);
+                let imgSrc  = !item.image ? item.image : item.image.src;
+                let shopifycategory = results[0].shopifycategory ? item.product_type : null;
+                if(results){
+                    let data = {};
+                    data.title = item.title;
+                    data.store_id = storeid;
+                    data.shopifyproductid = item.id,
+                    data.price =  item.variants[0].price;
+                    data.description = null,
+                    data.category = null,
+                    data.shopifycategory = shopifycategory,
+                    data.image = imgSrc,
+
+                    Shopify.app.models.product.update({shopifyproductid: item.id}, data, function(err, res) {
+                        if(err){
+                            let error = new Error(err);
+                            error.status = 400;
+                            reject(error);  
+                        }    
+                        resolve(true);
+                    });
+                }
+            } catch(err){
+                reject(err);  
+            }
+        })    
+    
+    } 
+    Shopify.prototype.getProduct = (id) => {
+        return new Promise( async (resolve, reject) => {
+            Shopify.app.models.product.find({'where': {'shopifyproductid': id}}, (err, res) => {
+                if(err)
+                    return reject (err);
+                if (!res) { 
+                    resolve(false);
+                } else {
+                    resolve(res);                    
+                }
+            });
+        });  
+    }
+
+    Shopify.remoteMethod('productsupdate', {
+        accepts: [
+            {arg: 'req', type: 'object', http: {source: 'req'}},
+            {arg: 'res', type: 'object', http: {source: 'res'}},
+        ],
+        http: {
+            path: '/productsupdate',
+            verb: 'post',
+        },
+        returns: {
+            arg: 'data',
+            type: 'object',
+        },
+        
+    });
+
+
+  Shopify.productsdelete =  async (req, res, cb) => {
+    try{
+        let request = req.body;
+        let ShopifyShopUrl = req.headers['x-shopify-shop-domain'];
+        let storeid = await Shopify.prototype.getStoreid(ShopifyShopUrl);
+        if(storeid){
+            await Shopify.prototype.deleteProduct(storeid, request);
+        }
+    } catch (err) {
+        log.error(err);
+    }    
+  }
+
+    Shopify.prototype.deleteProduct = (storeid, request) => {
+        return new Promise( async (resolve, reject) => {
+            Shopify.app.models.product.destroyAll({shopifyproductid: request.id}, (err, res) => {
+                if(err)
+                    return reject (err);
+                if (!res) { 
+                    resolve(false);
+                } else {
+                    resolve(true);                    
+                }
+            });
+        });  
+    }  
+
+  Shopify.remoteMethod('productsdelete', {
+    accepts: [
+      {arg: 'req', type: 'object', http: {source: 'req'}},
+      {arg: 'res', type: 'object', http: {source: 'res'}},
+    ],
+    http: {
+      path: '/productsdelete',
+      verb: 'post',
+    },
+    returns: {
+      arg: 'data',
+      type: 'object',
+
+    },
+    
+  });
+
+
+  Shopify.shopifyAppUninstall =  async (req, res, cb) => {
+    try{
+        let request = req.body;
+        let ShopifyShopUrl = req.headers['x-shopify-shop-domain'];
+        await Shopify.prototype.deActivateStore(ShopifyShopUrl);
+    } catch (err) {
+        log.error(err);
+    }    
+  }
+  Shopify.prototype.deActivateStore = (ShopifyShopUrl) => {
+    return new Promise( async (resolve, reject) => {
+        Shopify.app.models.Store.updateAll({'store_url': ShopifyShopUrl}, {"deactivate_account": 0}, (err, res) => {
+            if(err)
+                reject (err);
+            if (!res) { 
+                resolve(false);
+            } else {
+                resolve(true);                    
+            }
+        });
+    });       
+}
+
+  Shopify.remoteMethod('shopifyAppUninstall', {
+    accepts: [
+      {arg: 'req', type: 'object', http: {source: 'req'}},
+      {arg: 'res', type: 'object', http: {source: 'res'}},
+    ],
+    http: {
+      path: '/shopifyAppUninstall',
+      verb: 'post',
+    },
+    returns: {
+      arg: 'data',
+      type: 'object',
+
+    },
+    
+  });
+
   
 };
