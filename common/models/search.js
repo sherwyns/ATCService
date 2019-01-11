@@ -51,7 +51,7 @@ module.exports = function(Search) {
             let sql = `SELECT id, shop_name, store_url, image, business_type, latitude, longitude, neighbourhood, (SELECT group_concat(CONCAT(COALESCE(cat.id,''), ':', COALESCE(cat.name,''), ':', COALESCE(cat.image_url,'NULL'))SEPARATOR ',') FROM StoreCategory as stc
                         JOIN category as cat
                         on stc.categoty_id = cat.id
-                        WHERE stc.store_id = st.id) as category FROM Store as st WHERE st.name LIKE ?`
+                        WHERE stc.store_id = st.id) as category FROM Store as st WHERE st.shop_name LIKE ?`
 
             // let sql = `SELECT name, store_url, image, description, tagline, neighbourhood FROM Store
             //             WHERE MATCH(name) 

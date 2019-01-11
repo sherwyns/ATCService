@@ -12,7 +12,7 @@
     },
     "shopifyproductid": {
       "type": "number",
-      "required": true
+      "required": false
     },
     "title": {
       "type": "string",

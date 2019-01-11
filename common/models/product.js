@@ -33,6 +33,7 @@ module.exports = function(Product) {
         'image': path,
       };
       let categories = req.body.category;
+      console.log(categories);
       let categoryData = {};
       let cat = [];
       Product.create(data, function(err, data) {
@@ -41,12 +42,12 @@ module.exports = function(Product) {
           error.status = 400;
           return cb(error);
         }
-        let categoryid  = '';
-        for (let item of categories) {
-          categoryid  = item;
-        };
+        // let categoryid  = '';
+        // for (let item of categories) {
+        //   categoryid  = item;
+        // };
         let db =  Product.dataSource;
-        let sql = `INSERT INTO productcategory  VALUES (NULL, '${categoryid}', '${data.id}');`;
+        let sql = `INSERT INTO productcategory  VALUES (NULL, '${categories}', '${data.id}');`;
         db.connector.execute(sql, function(err2, res2) {
           if (err2) {
             let error = new Error(err2);
@@ -109,36 +110,26 @@ module.exports = function(Product) {
           'image': req.body.image,
         };
       }
-      if (req.body.shopifycategory && req.body.productCategoryId !== 0) {
-          let res = await Product.prototype.uppdateProduct(req.body, data, req.body.product_id);
-          return cb(null, res);
-      } else {
+      if( (req.body.shopifycategory == 'null' && req.body.productCategoryId != 0 ) || !req.body.shopifycategory) {
         Product.updateAll({id: Number(req.body.product_id)}, data, function(err, res) {
           if (err) {
-            let error = new Error(err);
-            error.status = 400;
-            return cb(error);
+            log.error(err);
           }
           let db =  Product.dataSource;
-          let sql = `UPDATE productcategory SET catgory_id = ${req.body.category} WHERE product_id = ${req.body.product_id}`;
+          let sql = `UPDATE productcategory SET catgory_id = ${req.body.productCategoryId} WHERE product_id = ${req.body.product_id}`;
           db.connector.execute(sql, function(err2, res2) {
             if (err2) {
-              let error = new Error(err2);
-              error.status = 400;
-              return cb(error);
+              log.error(err2);
             }
-            cb(null, res2);
+            return cb(null, res2);
           });
-
-        return cb(null, res);
-          
        });
-      }
+      } else if (req.body.shopifycategory && req.body.productCategoryId != 0) {
+          let res = await Product.prototype.uppdateProduct(req.body, data, req.body.product_id);
+          return cb(null, res);
+      }  
         } catch (err) {
           log.error(err);
-          let error = new Error(err);
-          error.status = 400;
-          return error;
         }      
     });
   };

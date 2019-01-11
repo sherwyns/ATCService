@@ -1,5 +1,5 @@
 'use strict';
-//let log = require('./../../server/logger');
+let log = require('./../../server/logger');
 
 
 module.exports = function(Uploadinformation) {
@@ -55,7 +55,7 @@ module.exports = function(Uploadinformation) {
                 data.title = product.title;
                 data.description = product.description;
                 data.image = product.image_url;
-                data.category = product.category;
+                data.shopifycategory = product.category;
                 let price = product.price === '' ? 0 : product.price;
                 data.price = parseFloat(price);
                 products.push(data);

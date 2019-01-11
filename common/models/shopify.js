@@ -2,6 +2,7 @@
 let log = require('./../../server/logger');
 let request = require("request-promise");
 let config = require('./../../env.config');
+const stripHtmltags = /(<([^>]+)>)/ig;
 module.exports = function(Shopify) {
 
     Shopify.validateuser = async (req, res, cb) => {
@@ -48,12 +49,16 @@ module.exports = function(Shopify) {
         return new Promise( async (resolve, reject) => {
             try {
                 let webhooks = await Shopify.prototype.getAllWebhooks(shop, accessToken);
-
                 webhooks = webhooks.webhooks
-                for (let item of webhooks) {
-                    await Shopify.prototype.deleteWebhookFromShopify(shop, accessToken, item.id);
+                if(webhooks.length == 0){
+                    resolve(true);
+                } else {
+                    for (let item of webhooks) {
+                        await Shopify.prototype.deleteWebhookFromShopify(shop, accessToken, item.id);
+                    }
+                    resolve(true);
                 }
-                resolve(true);
+                
             } catch (err) {
                reject(err);
             }
@@ -98,13 +103,15 @@ module.exports = function(Shopify) {
     Shopify.prototype.productCreate =  (shop, accessToken) => {
         return new Promise( async (resolve, reject) => {
             try {
+                
                 let atcdata = {
                     'webhook': {
                     'topic': 'products/create',
-                    'address': `https://${config.domain}/api/shopify/productscreate`,
+                    'address': `${config.shopifydomain}api/shopify/productscreate`,
                     'format': 'json',
                     },
                 };
+                
                     let shopOtions = {
                     url: `https://${shop}${config.shopifyWebHookUrl}`,
                     method: 'POST',
@@ -126,7 +133,7 @@ module.exports = function(Shopify) {
                 let atcdata = {
                     'webhook': {
                     'topic': 'products/update',
-                    'address': `https://${config.domain}/api/shopify/productsupdate`,
+                    'address': `${config.shopifydomain}api/shopify/productsupdate`,
                     'format': 'json',
                     },
                 };
@@ -151,7 +158,7 @@ module.exports = function(Shopify) {
                 let atcdata = {
                     'webhook': {
                     'topic': 'products/delete',
-                    'address': `https://${config.domain}/api/shopify/productsdelete`,
+                    'address': `${config.shopifydomain}api/shopify/productsdelete`,
                     'format': 'json',
                     },
                 };
@@ -177,7 +184,7 @@ module.exports = function(Shopify) {
                 let atcdata = {
                     'webhook': {
                     'topic': 'shop/update',
-                    'address': `https://${config.domain}/api/shopify/shopifyAppUninstall`,
+                    'address': `${config.domain}api/shopify/shopifyAppUninstall`,
                     'format': 'json',
                     },
                 };
@@ -310,6 +317,7 @@ module.exports = function(Shopify) {
                     'latitude': shop.latitude,
                     'longitude': shop.longitude,
                 };
+                //df
                 Shopify.app.models.Store.create(data, function(err, res) {
                     if (err) {
                         return reject(err);
@@ -417,13 +425,12 @@ module.exports = function(Shopify) {
 
   Shopify.products = async (req, res, cb) => {
     try{
-       
-        let shop = await  Shopify.prototype.getAccessToken(req.body.storeid);
-        console.log("shop", shop);
+        let shop = await  Shopify.prototype.getShop(req.body.storeid);
         if(!shop){
             return {status:0} 
         } else {
-            let res = await Shopify.prototype.createProducts(req.body.storeid, shop);
+            let shopDetails = await  Shopify.prototype.getAccessToken(req.body.storeid);
+            let res = await Shopify.prototype.createProducts(req.body.storeid, shopDetails);
             if(res){
                 return {status:200}
             }
@@ -466,7 +473,7 @@ module.exports = function(Shopify) {
                     data.store_id = storeid;
                     data.shopifyproductid = item.id,
                     data.price =  !'variants' in item ? null : item.variants[0].price;
-                    data.description = null,
+                    data.description = !"body_html" in item ? null: item.body_html.replace(stripHtmltags, ""),
                     data.category = null,
                     data.shopifycategory = !'product_type' in item ? null : item.product_type, //item['product_type'] != undefined
                     data.image = imgSrc,
@@ -492,17 +499,20 @@ module.exports = function(Shopify) {
     
     }
     Shopify.prototype.isProductExists = (shopifyproductid) => {
-
         return new Promise( async (resolve, reject) => {
-                Shopify.app.models.product.findOne({'where': {'shopifyproductid': shopifyproductid}}, (err, res) => {
-                    if(err)
-                        return reject (err);
-                    if (!res) { 
-                        resolve(false);
-                    } else {
-                        resolve(true);                    
-                    }
-                });
+            let db =  Shopify.dataSource;
+            let sql = `SELECT * FROM atc.product where shopifyproductid = ?`;
+            let params = [shopifyproductid]
+            db.connector.execute(sql, params, function(err, res) {
+              if (err) {
+                reject(err);
+              }
+              if(res.length == 1){
+                resolve(true);   
+              } else {
+                resolve(false);    
+              }
+            });
           });       
     }
 
@@ -531,6 +541,24 @@ module.exports = function(Shopify) {
             if(err)
                 return reject (err);
             resolve(data);                    
+        });
+    }); 
+  }
+
+  Shopify.prototype.getShop = (storeid) => {
+    return new Promise( async (resolve, reject) => {
+        let db =  Shopify.dataSource;
+        let sql = `SELECT * FROM Store WHERE id = ? AND deactivate_account = 1 AND tax_id IS NOT NULL`;
+        let params = [storeid]
+        db.connector.execute(sql, params, function(err, res) {
+          if (err) {
+            reject(err);
+          }
+          if(res.length == 1){
+            resolve(true);   
+          } else {
+            resolve(false);    
+          }
         });
     }); 
   }
@@ -595,6 +623,7 @@ module.exports = function(Shopify) {
             let storeid = await Shopify.prototype.getStoreid(ShopifyShopUrl);
             if(storeid){
                 await Shopify.prototype.createProduct(storeid, request);
+                return true
             }
         } catch (err) {
            log.error(err);
@@ -614,12 +643,13 @@ module.exports = function(Shopify) {
             });
         });       
     }
+
     Shopify.prototype.createProduct = (storeid, product) => {
         return new Promise( async (resolve, reject) => {
             try{
+                
                 let  products = [];
                 let item = product;
-            // for (let item of product){
                     let isProductExists = await Shopify.prototype.isProductExists(item.id);
                     let imgSrc  = !item.image ? item.image : item.image.src;
                     if(!isProductExists){
@@ -628,14 +658,12 @@ module.exports = function(Shopify) {
                         data.store_id = storeid;
                         data.shopifyproductid = item.id,
                         data.price =  item.variants[0].price;
-                        data.description = null,
+                        data.description = !"body_html" in item ? null: item.body_html.replace(stripHtmltags, ""),
                         data.category = null,
-                        data.shopifycategory = item.product_type,
+                        data.shopifycategory = !'product_type' in item || item.product_type == '' ? null : item.product_type,
                         data.image = imgSrc,
                         products.push(data);
                     }
-            // };
-
                     if(products.length === 0){
                         resolve(true);  
                     } else {
@@ -652,7 +680,6 @@ module.exports = function(Shopify) {
                 reject(err);  
             }
         })    
-    
     }
 
     Shopify.remoteMethod('productscreate', {
@@ -698,7 +725,7 @@ module.exports = function(Shopify) {
                     data.store_id = storeid;
                     data.shopifyproductid = item.id,
                     data.price =  item.variants[0].price;
-                    data.description = null,
+                    data.description = !"body_html" in item ? null: item.body_html.replace(stripHtmltags, ""),
                     data.category = null,
                     data.shopifycategory = shopifycategory,
                     data.image = imgSrc,
@@ -756,6 +783,7 @@ module.exports = function(Shopify) {
         let storeid = await Shopify.prototype.getStoreid(ShopifyShopUrl);
         if(storeid){
             await Shopify.prototype.deleteProduct(storeid, request);
+            return true
         }
     } catch (err) {
         log.error(err);

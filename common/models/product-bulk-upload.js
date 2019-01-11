@@ -52,7 +52,6 @@ module.exports = function(Productbulkupload) {
       .then((jsonObj)=>{
         request.post({url: url + 'api/uploadinformations/products', form: {data: jsonObj, storeid: req.body.store_id, filename: uploadedFileName + '.csv'}}, function(err, httpResponse, body) {
           if (err) {
-            console.log(err);
             log.error(err);
             cb(err, null);
           } else {

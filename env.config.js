@@ -10,12 +10,11 @@ const shopifyReadProductUrl = '/admin/products.json';
 const shopifyWebHookUrl = '/admin/webhooks.json';
 const shopifydeleteWebHookUrl = '/admin/webhooks/';
 const scopes = 'read_products,write_products';
-const clientApiKey = '5db1f40a4062235576a968bf57b77f8c';
 
 const local = {
   domain: 'http://localhost:3000/',
   shopifydomain: 'https://dev.aroundthecorner.store/',
-  clientApiKey: clientApiKey,
+  clientApiKey: process.env.LOCAL_API_KEY,
   scopes: scopes,
   apiKey: process.env.LOCAL_API_KEY,
   apiSecretKey: process.env.LOCAL_API_SECRET_KEY,
@@ -24,14 +23,14 @@ const local = {
   shopifyReadProductUrl: shopifyReadProductUrl,
   shopifyWebHookUrl: shopifyWebHookUrl,
   shopifydeleteWebHookUrl: shopifydeleteWebHookUrl,
-  redirectUri: 'http://localhost:3001/route',
+  redirectUri: 'http://localhost:3001/shopify',
   fileDirectory: process.env.LOCAL_FILE_DIRECTORY,
 };
 
 const dev = {
   domain: 'https://dev.aroundthecorner.store/',
   shopifydomain: 'https://dev.aroundthecorner.store/',
-  clientApiKey: clientApiKey,
+  clientApiKey: process.env.DEV_API_KEY,
   scopes: scopes,
   apiKey: process.env.DEV_API_KEY,
   apiSecretKey: process.env.DEv_API_SECRET_KEY,
@@ -40,14 +39,14 @@ const dev = {
   shopifyReadProductUrl: shopifyReadProductUrl,
   shopifyWebHookUrl: shopifyWebHookUrl,
   shopifydeleteWebHookUrl: shopifydeleteWebHookUrl,
-  redirectUri: 'https://dev.aroundthecorner.store/route',
+  redirectUri: 'http://atcdev.aroundthecorner.store/shopify',
   fileDirectory: process.env.DEV_FILE_DIRECTORY,
 };
 
 const production = {
   domain: 'https://api.aroundthecorner.store/',
   shopifydomain: 'https://api.aroundthecorner.store/',
-  clientApiKey: clientApiKey,
+  clientApiKey: process.env.PRODUCTION_API_KEY,
   scopes: scopes,
   apiKey: process.env.PRODUCTION_API_KEY,
   apiSecretKey: process.env.PRODUCTION_API_SECRET_KEY,
@@ -56,7 +55,7 @@ const production = {
   shopifyReadProductUrl: shopifyReadProductUrl,
   shopifyWebHookUrl: shopifyWebHookUrl,
   shopifydeleteWebHookUrl: shopifydeleteWebHookUrl,
-  redirectUri: 'https://api.aroundthecorner.store/route',
+  redirectUri: 'https://app.aroundthecorner.store/shopify',
   fileDirectory: process.env.PRODUCTION_FILE_DIRECTORY,
 };
 
