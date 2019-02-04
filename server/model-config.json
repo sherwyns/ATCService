@@ -94,5 +94,8 @@
   "shopifyaccesstoken": {
     "dataSource": "mysqlds",
     "public": false
+  },
+  "Email": {
+    "dataSource": "Email"
   }
 }

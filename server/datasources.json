@@ -12,5 +12,18 @@
     "name": "mysqlds",
     "user": "root",
     "connector": "mysql"
+  },
+  "Email": {
+    "connector": "mail",
+    "transports": [{
+      "type": "SMTP",
+      "host": "smtp.zoho.com",
+      "secure": true,
+      "port": 465,
+      "auth": {
+        "user": "password.assistance@aroundthecorner.store",
+        "pass": "Passatc1!"
+      }
+    }]
   }
 }

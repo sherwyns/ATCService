@@ -2,6 +2,7 @@
 let log = require('./../../server/logger');
 let multer = require('multer');
 let path = require('path');
+let request = require('request');
 let config = require('./../../env.config');
 let url = config.domain;
 
@@ -313,41 +314,25 @@ module.exports = function(Store) {
         error.status = 400;
         return cb(error);
       }
-      let data = {};
+      let data = {
+        'shop_name': req.body.name,
+        'user_id': Number(req.body.user_id),
+        'name': req.body.name,
+        'store_url': req.body.storeurl,
+        'business_type': 2,
+        'timezone': req.body.timezone,
+        'workinghours': req.body.workinghours,
+        'image': req.body.image,
+        'tagline': req.body.tagline,
+        'description': req.body.description,
+        "neighbourhood":req.body.neighbourhood,
+        'latitude': 0,
+        'longitude': 0,
+      };
       let file = req.files[0];
       if (file) {
         let path = `${url}images/` + req.files[0].filename;
-        data = {
-          'shop_name': req.body.name,
-          'user_id': Number(req.body.user_id),
-          'name': req.body.name,
-          'store_url': req.body.storeurl,
-          'business_type': 2,
-          'timezone': req.body.timezone,
-          'workinghours': req.body.workinghours,
-          'image': path,
-          'tagline': req.body.tagline,
-          'description': req.body.description,
-          "neighbourhood":req.body.neighbourhood,
-          'latitude': 0,
-          'longitude': 0,
-        };
-      } else {
-        data = {
-          'shop_name': req.body.name,
-          'user_id': Number(req.body.user_id),
-          'name': req.body.name,
-          'store_url': req.body.storeurl,
-          'business_type': 2,
-          'timezone': req.body.timezone,
-          'workinghours': req.body.workinghours,
-          'image': req.body.image,
-          'tagline': req.body.tagline,
-          'description': req.body.description,
-          "neighbourhood":req.body.neighbourhood,
-          'latitude': 0,
-          'longitude': 0,
-        };
+        data.image = path;
       }
       Store.updateAll({id: Number(req.body.store_id)}, data, function(err, res) {
         if (err) {
@@ -412,6 +397,7 @@ module.exports = function(Store) {
   });
   Store.user = async (req, res, cb) => {
     try {
+      console.log("req", req);
       let data = {};
       if(req.body.businessname && req.body.newemail && req.body.currentpassword && req.body.newpassword){
           let isEmailExist = await Store.prototype.checkEmailExist(req.body.newemail);
@@ -448,7 +434,7 @@ module.exports = function(Store) {
 
       }
     } catch (err) {
-        console.log(err);
+      log.err(err);
     }
   };
 

@@ -2,6 +2,7 @@
 let multer = require('multer');
 let path = require('path');
 let config = require('./../../env.config');
+let log = require('./../../server/logger');
 let url = config.domain;
 
 module.exports = function(Product) {
@@ -33,7 +34,6 @@ module.exports = function(Product) {
         'image': path,
       };
       let categories = req.body.category;
-      console.log(categories);
       let categoryData = {};
       let cat = [];
       Product.create(data, function(err, data) {
@@ -95,21 +95,20 @@ module.exports = function(Product) {
         data = {
           'store_id': Number(req.body.store_id),
           'title': req.body.title,
-          'price': req.body.price,
           'description': req.body.description,
-          'category': null,
           'image': path,
         };
       } else {
         data = {
           'store_id': Number(req.body.store_id),
           'title': req.body.title,
-          'price': req.body.price,
           'description': req.body.description,
-          'category': null,
           'image': req.body.image,
         };
       }
+      if(req.body.price != null && req.body.price != 'null'){
+        data.price = req.body.price;
+      } 
       if( (req.body.shopifycategory == 'null' && req.body.productCategoryId != 0 ) || !req.body.shopifycategory) {
         Product.updateAll({id: Number(req.body.product_id)}, data, function(err, res) {
           if (err) {
@@ -125,7 +124,12 @@ module.exports = function(Product) {
           });
        });
       } else if (req.body.shopifycategory && req.body.productCategoryId != 0) {
-          let res = await Product.prototype.uppdateProduct(req.body, data, req.body.product_id);
+        data.category = null;
+        if(req.body.dbcategory){
+          data.category = req.body.dbcategory;
+        }
+          let type = !req.body.dbcategory ? "shopify" : 'atc';
+          let res = await Product.prototype.uppdateProduct(req.body, data, req.body.product_id, type);
           return cb(null, res);
       }  
         } catch (err) {
@@ -134,9 +138,10 @@ module.exports = function(Product) {
     });
   };
 
-  Product.prototype.uppdateProduct = async (req, data, productid) => {
+  Product.prototype.uppdateProduct = async (req, data, productid, type) => {
     try{
           let updateProduct = await Product.prototype.updateDbProduct(data, productid);
+          if(type == 'shopify'){
           if(updateProduct){
             let productids = await Product.prototype.getProductIds(req, data);
             for(let item of productids) {
@@ -144,8 +149,17 @@ module.exports = function(Product) {
               await Product.prototype.updateshopifycategory(item.id);
             } 
           }
+          } else if(type == 'atc'){
+             if(updateProduct){
+              let productids = await Product.prototype.getAtcProductIds(req, data);
+              for(let item of productids) {
+                await Product.prototype.insertProductCategories(req, item.id);
+                await Product.prototype.updateAtcCategory(item.id);
+              }
+            }   
+          }
+
         } catch (err) {
-          console.log(err);
           throw err;
           //log.error(err);
   
@@ -183,6 +197,22 @@ module.exports = function(Product) {
     });    
   }  
 
+  Product.prototype.updateAtcCategory = (productid) => {
+    return new Promise( async (resolve, reject) => {
+      try {
+            let db =  Product.dataSource;
+            let sql = `UPDATE product SET category = NULL WHERE id = ${productid}`;
+            db.connector.execute(sql, function(err, res) {
+            if (err) {
+                return reject(err);
+            }
+            resolve(true);
+          });
+      } catch (err) {
+         reject(err);
+      }
+    });    
+  } 
   Product.prototype.insertProductCategories = (req, productid) => {
     return new Promise( async (resolve, reject) => {
         try {
@@ -200,19 +230,23 @@ module.exports = function(Product) {
     });
   }  
 
-  Product.prototype.getProductIds = (data, productid) => {
+  Product.prototype.getAtcProductIds = (req, data) => {
     return new Promise( async (resolve, reject) => {
-        try {
-              Product.updateAll({id: Number(productid)}, data, function(err, res) {
-                if (err) {
-                  return reject(err);
-                }
-                resolve(true);
-              });
-        } catch (err) {
-           reject(err);
-        }
-    });
+      try {
+        let db =  Product.dataSource;
+        let sql = `SELECT id FROM product WHERE category = '${req.dbcategory}'`;
+        db.connector.execute(sql, function(err, res) {
+          if (err) {
+            return reject(err);
+          }
+          resolve(JSON.parse(JSON.stringify(res)));
+        });
+
+
+      } catch (err) {
+         reject(err);
+      }
+  });
   }  
 
 
@@ -309,10 +343,10 @@ module.exports = function(Product) {
   Product.getproductbystore = function(req, res, cb) {
     try {
       let db =  Product.dataSource;
-      let sql = `SELECT pd.id, pd.store_id, pd.title, pd.description, pd.price, pd.image as product_image,  cat.id as category_id, cat.name as category_name, cat.image_url as category_image FROM product as pd 
+      let sql = `SELECT pd.id, pd.store_id, pd.title, pd.description, pd.price, pd.image as product_image,  cat.id as category_id, cat.name as category_name FROM product as pd 
                   JOIN productcategory as pdc
                   ON pdc.product_id = pd.id
-                  JOIN category as cat
+                  JOIN productcategories as cat
                   ON cat.id = pdc.catgory_id
                   WHERE pd.store_id = ${req.params.id}`;
       db.connector.execute(sql, function(err, products) {
@@ -357,12 +391,12 @@ module.exports = function(Product) {
       //             ON cat.id = pdc.catgory_id
       //             WHERE pd.store_id = ${req.params.id}`;
 
-      let sql = `SELECT  pd.title, pdc.catgory_id as category_id, (SELECT name from productcategories WHERE id = pdc.catgory_id) as dbcategory_name,
-                  (IF(ISNULL(pd.shopifycategory), (SELECT name from productcategories WHERE id = pdc.catgory_id), pd.shopifycategory))as category_name,
-                  pd.shopifycategory, pd.description, pd.image as product_image, pd.price, pd.id FROM product as pd
+      let sql = `SELECT  Distinct pd.title, pdc.catgory_id as category_id, pd.category as dbcategory_name,
+                  (IF(ISNULL(pd.category), (IF(ISNULL(pd.shopifycategory),
+                  (SELECT name from productcategories WHERE id = pdc.catgory_id), pd.shopifycategory)), pd.category))as category_name, pd.shopifycategory, pd.description, pd.image as product_image, pd.price, pd.id FROM product as pd
                   LEFT JOIN productcategory as pdc
                   ON pdc.product_id = pd.id
-                  WHERE pd.store_id   = ${req.params.id} ORDER BY pd.id ASC`;
+                  WHERE pd.store_id = ${req.params.id} ORDER BY pd.id ASC`;
 
       db.connector.execute(sql, function(err, res) {
         if (err) {

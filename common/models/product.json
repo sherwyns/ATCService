@@ -20,7 +20,7 @@
     },
     "price": {
       "type": "number",
-      "required": true
+      "required": false
     },
     "description": {
       "type": "string",

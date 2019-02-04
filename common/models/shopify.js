@@ -425,12 +425,11 @@ module.exports = function(Shopify) {
 
   Shopify.products = async (req, res, cb) => {
     try{
-        let shop = await  Shopify.prototype.getShop(req.body.storeid);
+        let shop = await  Shopify.prototype.getAccessToken(req.body.storeid);
         if(!shop){
             return {status:0} 
         } else {
-            let shopDetails = await  Shopify.prototype.getAccessToken(req.body.storeid);
-            let res = await Shopify.prototype.createProducts(req.body.storeid, shopDetails);
+            let res = await Shopify.prototype.createProducts(req.body.storeid, shop);
             if(res){
                 return {status:200}
             }
@@ -458,16 +457,57 @@ module.exports = function(Shopify) {
     }
   }
 
+  Shopify.prototype.saveProducts = (products, productcategoryid) =>{
+    return new Promise((resolve, reject) => {
+        try{
+            Shopify.app.models.product.create(products, (err, res) => {
+                if(err){
+                    reject(err);  
+                } else{
+                    if(productcategoryid){
+                        if (!res || !(Array.isArray(res)) || res.length === 0){
+                            reject(new Error('No results when creating product'));
+                        }
+                        let db =  Shopify.dataSource;
+                        let sql = `INSERT INTO productcategory  VALUES (NULL, '${productcategoryid}', '${res[0].id}');`;
+                        db.connector.execute(sql, (err2, res2) => {
+                        if (err2) {
+                            reject(err2); 
+                        }else
+                            resolve(true)
+                        });    
+                    } else {
+                        resolve(true)
+                    }
+                }   
+            });
+        }catch(err){
+            reject(err)
+        }
+    });
+  };
   Shopify.prototype.createProducts = (storeid, shop) => {
     return new Promise( async (resolve, reject) => {
         try{
-            let  products = [];
+            let shopifycategory = null;
+            let productcategoryid = null;
             let shopifyProducts = JSON.parse(await Shopify.prototype.getShopifyProducts(shop));
             let shopProducts = shopifyProducts.products;
+            let i=0;
             for (let item of shopProducts){
                 let isProductExists = await Shopify.prototype.isProductExists(item.id);
                 let imgSrc  = !item.image ? item.image : item.image.src;
+                let categoryName = (!item.product_type) ? null : item.product_type;
+                let categoryId = !categoryName ? null : JSON.parse(JSON.stringify(await Shopify.prototype.productCategory(categoryName)));
+                if(!categoryId || (Array.isArray(categoryId) && categoryId.length == 0)){
+                    shopifycategory = categoryName;
+                }
+                else{
+                    shopifycategory = null;
+                    productcategoryid = categoryId[0].id;
+                }
                 if(!isProductExists){
+                    let  products = [];
                     let data = {};
                     data.title = item.title;
                     data.store_id = storeid;
@@ -475,39 +515,31 @@ module.exports = function(Shopify) {
                     data.price =  !'variants' in item ? null : item.variants[0].price;
                     data.description = !"body_html" in item ? null: item.body_html.replace(stripHtmltags, ""),
                     data.category = null,
-                    data.shopifycategory = !'product_type' in item ? null : item.product_type, //item['product_type'] != undefined
+                    data.shopifycategory = shopifycategory, 
                     data.image = imgSrc,
                     products.push(data);
+                    await Shopify.prototype.saveProducts(products, productcategoryid);
                 }
-            };
-            if(products.length === 0){
-                resolve(true);  
-            } else {    
-                Shopify.app.models.product.create(products, function(err, res) {
-                    if(err){
-                        let error = new Error(err);
-                        error.status = 400;
-                        reject(error);  
-                    }    
+                i++;
+                if(i < shopProducts.length - 1){
                     resolve(true);
-                });
+                }
             }
         } catch(err){
             reject(err);  
         }
     })    
-    
     }
     Shopify.prototype.isProductExists = (shopifyproductid) => {
         return new Promise( async (resolve, reject) => {
             let db =  Shopify.dataSource;
-            let sql = `SELECT * FROM atc.product where shopifyproductid = ?`;
+            let sql = `SELECT * FROM product where shopifyproductid = ?`;
             let params = [shopifyproductid]
             db.connector.execute(sql, params, function(err, res) {
               if (err) {
                 reject(err);
               }
-              if(res.length == 1){
+              if(res && Array.isArray(res) && res.length == 1){
                 resolve(true);   
               } else {
                 resolve(false);    
@@ -649,38 +681,82 @@ module.exports = function(Shopify) {
             try{
                 
                 let  products = [];
+                let shopifycategory = null;
+                let productcategoryid = null;
                 let item = product;
-                    let isProductExists = await Shopify.prototype.isProductExists(item.id);
-                    let imgSrc  = !item.image ? item.image : item.image.src;
-                    if(!isProductExists){
-                        let data = {};
-                        data.title = item.title;
-                        data.store_id = storeid;
-                        data.shopifyproductid = item.id,
-                        data.price =  item.variants[0].price;
-                        data.description = !"body_html" in item ? null: item.body_html.replace(stripHtmltags, ""),
-                        data.category = null,
-                        data.shopifycategory = !'product_type' in item || item.product_type == '' ? null : item.product_type,
-                        data.image = imgSrc,
-                        products.push(data);
-                    }
-                    if(products.length === 0){
-                        resolve(true);  
-                    } else {
-                        Shopify.app.models.product.create(products, function(err, res) {
-                            if(err){
-                                let error = new Error(err);
-                                error.status = 400;
-                                reject(error);  
-                            }    
+                let isProductExists = await Shopify.prototype.isProductExists(item.id);
+                let imgSrc  = !item.image ? item.image : item.image.src;
+                // let category = await Shopify.prototype.productCategory(item.product_type);
+                let categoryName = (!item.product_type) ? null : item.product_type
+                let categoryId = !categoryName ? null : JSON.parse(JSON.stringify(await Shopify.prototype.productCategory(categoryName)));
+                if(!categoryId || (Array.isArray(categoryId) && categoryId.length == 0)){
+                    shopifycategory = categoryName;
+                }
+                else{
+                    shopifycategory = null;
+                    productcategoryid = categoryId[0].id;
+                }
+                if(!isProductExists){
+                    let data = {};
+                    data.title = item.title;
+                    data.store_id = storeid;
+                    data.shopifyproductid = item.id,
+                    data.price =  item.variants[0].price;
+                    data.description = !"body_html" in item ? null: item.body_html.replace(stripHtmltags, ""),
+                    data.category = null,
+                    data.shopifycategory = shopifycategory,
+                    data.image = imgSrc,
+                    products.push(data);
+                }
+                if(products.length === 0){
+                    resolve(true);  
+                } else {
+                    Shopify.app.models.product.create(products, function(err, res) {
+                        if(err){
+                            reject(err);  
+                        }    
+                        if(productcategoryid){
+                            if (!res || !(Array.isArray(res)) || res.length === 0){
+                                reject(new Error('No results when creating product'));
+                            }
+                            let db =  Shopify.dataSource;
+                            let sql = `INSERT INTO productcategory  VALUES (NULL, '${productcategoryid}', '${res[0].id}');`;
+                            db.connector.execute(sql, (err2, res2) => {
+                                if (err2) {
+                                reject(err2); 
+                                }
+                                resolve(true);
+                            });
+                        }
+                        else{
                             resolve(true);
-                        });
-                    }
+                        }    
+                    });
+                }
             } catch(err){
                 reject(err);  
             }
         })    
     }
+
+    Shopify.prototype.productCategory = (categoryName) => {
+        return new Promise( async (resolve, reject) => {
+        try{
+            let db = Shopify.dataSource;
+            let sql = `SELECT id FROM productcategories WHERE name = ?`;
+            let params = [categoryName];
+            db.connector.execute(sql, params, (err, product) => {
+            if (err) {
+                reject(err);
+            }
+                resolve(product);
+            }); 
+        } catch(err){
+            reject(err); 
+        }
+        }) 
+    }
+
 
     Shopify.remoteMethod('productscreate', {
         accepts: [

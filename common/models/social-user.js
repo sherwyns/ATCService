@@ -127,7 +127,7 @@ module.exports = function(Socialuser) {
   });
 
   Socialuser.remoteMethod('signin', {
-    description: 'Login by Facebook or Google',
+    description: 'Login using Facebook or Google',
     accepts: [
                 {arg: 'req', type: 'object', http: {source: 'req'}},
     ],

@@ -1,24 +1,12 @@
 {
   "name": "favorite",
+  "plural": "favorite",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
     "validateUpsert": true
   },
-  "properties": {
-    "user_id": {
-      "type": "number",
-      "required": true
-    },
-    "store": {
-      "type": "any",
-      "required": false
-    },
-    "product": {
-      "type": "any",
-      "required": false
-    }
-  },
+  "properties": {},
   "validations": [],
   "relations": {},
   "acls": [],
